@@ -1,4 +1,4 @@
-import * as React from "react"
+
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input"
@@ -6,12 +6,9 @@ import { Label } from "@/components/ui/label"
 import { useNavigate } from "react-router-dom";
 
 
-interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {
-    setSelectedRole: any;
-    selectedRole: any;
-}
+interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> { }
 
-export function UserAuthForm({ className, selectedRole, setSelectedRole, ...props }: UserAuthFormProps) {
+export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
     const navigate = useNavigate()
     return (
         <div className={cn("grid gap-6", className)} {...props}>
@@ -33,7 +30,7 @@ export function UserAuthForm({ className, selectedRole, setSelectedRole, ...prop
                     <div className="p-1"></div>
 
                     <Button onClick={() => {
-                        navigate(`${selectedRole}/registration`)
+                        navigate(`user/registration`)
                     }
                     }
                     >
@@ -58,9 +55,7 @@ export function UserAuthForm({ className, selectedRole, setSelectedRole, ...prop
                     Connect to MetaMask
 
                 </Button>
-                <Button onClick={() => setSelectedRole(null)}> {/* Use setSelectedRole directly */}
-                    Back
-                </Button>
+
             </div>
 
 

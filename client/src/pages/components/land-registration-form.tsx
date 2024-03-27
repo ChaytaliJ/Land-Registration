@@ -17,11 +17,11 @@ import { useNavigate } from "react-router-dom";
 
 
 const profileFormSchema = z.object({
-    username: z.string().min(2, "Username must be at least 2 characters.").max(30, "Username must not be longer than 30 characters."),
-    email: z.string({ required_error: "Please enter an email." }).email(),
-    age: z.string(),
-    adhaarCardNo: z.string({ required_error: "Adhaar number required" }),
-    panCardNo: z.string({ required_error: "Pan card number required" }),
+    area: z.string({ required_error: "Please enter area." }),
+    survey: z.string({ required_error: "Please enter survey No" }),
+    state: z.string(),
+    price: z.string({ required_error: "Adhaar number required" }),
+    pid: z.string({ required_error: "Pan card number required" }),
     city: z.string({ required_error: "city name required" })
 });
 
@@ -42,10 +42,10 @@ export default function LandRegistrationForm() {
             })} className="space-y-2">
                 <FormField
                     control={form.control}
-                    name="username"
+                    name="area"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Username</FormLabel>
+                            <FormLabel>Area(SqFt)</FormLabel>
                             <FormControl>
                                 <Input {...field} style={{ width: "600px" }} />
                             </FormControl>
@@ -68,10 +68,10 @@ export default function LandRegistrationForm() {
                 />
                 <FormField
                     control={form.control}
-                    name="age"
+                    name="state"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Age</FormLabel>
+                            <FormLabel>State</FormLabel>
                             <FormControl>
                                 <Input {...field} style={{ width: "600px" }} />
                             </FormControl>
@@ -81,10 +81,10 @@ export default function LandRegistrationForm() {
                 />
                 <FormField
                     control={form.control}
-                    name="adhaarCardNo"
+                    name="price"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Adhaar card No</FormLabel>
+                            <FormLabel>Land Price</FormLabel>
                             <FormControl>
                                 <Input {...field} style={{ width: "600px" }} />
                             </FormControl>
@@ -94,10 +94,24 @@ export default function LandRegistrationForm() {
                 />
                 <FormField
                     control={form.control}
-                    name="panCardNo"
+                    name="pid"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Pan card No</FormLabel>
+                            <FormLabel>PID</FormLabel>
+                            <FormControl>
+                                <Input {...field} style={{ width: "600px" }} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+
+                <FormField
+                    control={form.control}
+                    name="survey"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Survey No</FormLabel>
                             <FormControl>
                                 <Input {...field} style={{ width: "600px" }} />
                             </FormControl>
@@ -109,20 +123,7 @@ export default function LandRegistrationForm() {
                     <Label htmlFor="picture">Document</Label>
                     <Input id="picture" type="file" />
                 </div>
-                <FormField
-                    control={form.control}
-                    name="email"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Email</FormLabel>
-                            <FormControl>
-                                <Input {...field} placeholder="example@gmail.com" style={{ width: "600px" }} />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-                <div>
+                <div className="pt-6">
                     <Button type="submit">Add</Button>
                 </div>
             </form>

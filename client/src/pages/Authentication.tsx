@@ -1,7 +1,7 @@
-import { useState } from 'react';
+
 import { Link } from "react-router-dom"
 import { UserAuthForm } from "@/pages/components/user-auth-form"
-import { Button } from "@/components/ui/button"
+// import { Button } from "@/components/ui/button"
 import chainland from "../assets/chainLand.jpg"
 import land from "../assets/aldrin-rachman-pradana-k51kZBpbe0E-unsplash.jpg"
 import contract from "../assets/dimitri-karastelev-ZH4FUYiaczY-unsplash.jpg"
@@ -13,14 +13,13 @@ import {
     CarouselPrevious,
 } from "@/components/ui/carousel"
 
-
 export const metadata = {
     title: "Authentication",
     description: "Authentication forms built using the components.",
 }
 
 export default function Authentication() {
-    const [selectedRole, setSelectedRole] = useState(null);
+
 
     return (
         <>
@@ -41,8 +40,11 @@ export default function Authentication() {
                 />
             </div>
 
+
             <div className="container relative hidden h-[745px] flex-col items-center justify-center md:grid lg:max-w-none lg:grid-cols-2 lg:px-0">
+
                 <div className="relative hidden h-full flex-col bg-muted p-20 text-white lg:flex dark:border-r">
+
                     <div className="absolute inset-0 bg-zinc-900" />
 
                     <div className="relative z-20 flex items-center text-lg font-medium">
@@ -78,63 +80,46 @@ export default function Authentication() {
                 </div>
 
                 <div>
+
                     <div className="flex flex-col">
-                        {!selectedRole && (
-                            <div className="flex flex-col space-y-2 text-center">
-                                <h1 className="text-2xl font-semibold tracking-tight">
-                                    Select your role ?
-                                </h1>
-                            </div>
-                        )}
+                        {/* <div className="flex justify-center flex-row space-x-10">
+                            <Button>Land Inspector</Button>
+                            <Button>Contract Owner</Button>
 
+                        </div> */}
                         <div className="lg:p-8 flex justify-center">
-                            {!selectedRole && (
-                                <div className="flex w-40 flex-col justify-center  space-y-6">
 
-                                    <Button onClick={() =>
-                                        //@ts-ignore
-                                        setSelectedRole("user")}>User</Button>
-                                    <Button onClick={() =>
-                                        //@ts-ignore
-                                        setSelectedRole("landInspector")}>Land Inspector</Button>
-                                    <Button onClick={() =>
-                                        //@ts-ignore
-                                        setSelectedRole("contractOwner")}>Contract Owner</Button>
-                                </div>
-                            )}
-
-                            {selectedRole && (
-                                <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[400px]">
-                                    <div className="flex flex-col space-y-2 text-center">
-                                        <h1 className="text-2xl font-semibold tracking-tight">
-                                            {selectedRole === "user" ? "User Login" : selectedRole === "landInspector" ? "Land Inspector Login" : "Contract Owner Login"}
-                                        </h1>
-                                        <p className="text-sm text-muted-foreground">
-                                            Enter your wallets private key
-                                        </p>
-                                    </div>
-
-                                    <UserAuthForm setSelectedRole={setSelectedRole} selectedRole={selectedRole} />
-
-                                    <p className="px-8 text-center text-sm text-muted-foreground">
-                                        By clicking continue, you agree to our{" "}
-                                        <Link
-                                            to="/terms"
-                                            className="underline underline-offset-4 hover:text-primary"
-                                        >
-                                            Terms of Service
-                                        </Link>{" "}
-                                        and{" "}
-                                        <Link
-                                            to="/privacy"
-                                            className="underline underline-offset-4 hover:text-primary"
-                                        >
-                                            Privacy Policy
-                                        </Link>
-                                        .
+                            <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[400px]">
+                                <div className="flex flex-col space-y-2 text-center">
+                                    <h1 className="text-2xl font-semibold tracking-tight">
+                                        User Login
+                                    </h1>
+                                    <p className="text-sm text-muted-foreground">
+                                        Enter your wallets private key
                                     </p>
                                 </div>
-                            )}
+
+                                <UserAuthForm />
+
+                                <p className="px-8 text-center text-sm text-muted-foreground">
+                                    By clicking continue, you agree to our{" "}
+                                    <Link
+                                        to="/terms"
+                                        className="underline underline-offset-4 hover:text-primary"
+                                    >
+                                        Terms of Service
+                                    </Link>{" "}
+                                    and{" "}
+                                    <Link
+                                        to="/privacy"
+                                        className="underline underline-offset-4 hover:text-primary"
+                                    >
+                                        Privacy Policy
+                                    </Link>
+                                    .
+                                </p>
+                            </div>
+
                         </div>
                     </div>
                 </div>
