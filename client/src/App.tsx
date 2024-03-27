@@ -5,6 +5,8 @@ import UserRegistration from "./pages/UserRegistration";
 import UserHomePage from "./pages/UserHomePage";
 import { MainNav } from "./pages/components/layout/main-nav";
 import UserLands from "./pages/UserLands";
+import AddLands from "./pages/AddLands";
+import LandGallery from "./pages/LandGallery";
 
 function App() {
   return (
@@ -15,9 +17,9 @@ function App() {
 
       <Route path='/user/dashboard' element={<MainNav />}>
         <Route path="" element={<UserHomePage />} />
-        <Route path="add-lands" element={<>hello</>} />
+        <Route path="add-lands" element={<AddLands />} />
         <Route path="my-lands" element={<UserLands />} />
-        <Route path="land-gallery" element={<>hello</>} />
+        <Route path="land-gallery" element={<LandGallery />} />
         <Route path="recieved-request" element={<>hello</>} />
         <Route path="sent-request" element={<>hello</>} />
       </Route>

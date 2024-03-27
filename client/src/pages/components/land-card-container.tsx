@@ -1,15 +1,14 @@
 
 import LandCard from "./land-card";
-
-export default function LandCardContainer() {
+//@ts-ignore
+export default function LandCardContainer({ islandgallery }) {
     return (
         <div className="grid grid-cols-4 gap-4">
-            <LandCard />
-            <LandCard />
-            <LandCard />
-            <LandCard />
-            <LandCard />
-
+            <LandCard islandgallery={islandgallery} />
+            <LandCard islandgallery={islandgallery} />
+            <LandCard islandgallery={islandgallery} />
+            <LandCard islandgallery={islandgallery} />
+            <LandCard islandgallery={islandgallery} />
         </div>
 
     );

@@ -1,13 +1,15 @@
 import LandCardContainer from "./components/land-card-container";
 
-
-export default function UserLands() {
+export default function LandGallery() {
     return (
         <div className="flex h-200 flex-col items-center px-4">
             <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl p-6">
-                My Lands
+                Land Gallery
             </h1>
-            <LandCardContainer islandgallery={false} />
+
+            <LandCardContainer
+                //@ts-ignore
+                islandgallery={true} />
             <div className="p-10"></div>
         </div>
     )
