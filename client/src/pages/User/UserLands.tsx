@@ -1,4 +1,4 @@
-import LandCardContainer from "./components/land-card-container";
+import LandCardContainer from "../components/land-card-container";
 
 
 export default function UserLands() {

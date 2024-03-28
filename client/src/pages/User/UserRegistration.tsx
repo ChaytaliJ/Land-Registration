@@ -1,4 +1,4 @@
-import UserRegistrationForm from "./components/user-registration-form";
+import UserRegistrationForm from "../components/user-registration-form";
 
 function UserRegistration() {
     return (
