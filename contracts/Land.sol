@@ -1,5 +1,8 @@
-pragma solidity >= 0.5.2;
+// SPDX-License-Identifier: GPL-3.0
+
+pragma solidity >=0.7.0 <0.9.0;
 pragma experimental ABIEncoderV2;
+
 contract Land {
     struct Landreg {
         uint id;
@@ -13,7 +16,7 @@ contract Land {
         string document;
     }
 
-    struct Buyer{
+    struct Buyer {
         address id;
         string name;
         uint age;
@@ -24,7 +27,7 @@ contract Land {
         string email;
     }
 
-    struct Seller{
+    struct Seller {
         address id;
         string name;
         uint age;
@@ -41,16 +44,18 @@ contract Land {
         string designation;
     }
 
-    struct LandRequest{
+    struct LandRequest {
         uint reqId;
         address sellerId;
         address buyerId;
         uint landId;
-        // bool requestStatus;
-        // bool requested;
     }
 
-    //key value pairs
+    struct ContractOwner {
+        address ownerAddress;
+        mapping(address => bool) landInspectors;
+    }
+
     mapping(uint => Landreg) public lands;
     mapping(uint => LandInspector) public InspectorMapping;
     mapping(address => Seller) public SellerMapping;
@@ -73,7 +78,7 @@ contract Land {
     address public Land_Inspector;
     address[] public sellers;
     address[] public buyers;
-
+    ContractOwner public contractOwner;
     uint public landsCount;
     uint public inspectorsCount;
     uint public sellersCount;
@@ -81,273 +86,325 @@ contract Land {
     uint public requestsCount;
 
     event Registration(address _registrationId);
-    event AddingLand(uint indexed _landId);
-    event Landrequested(address _sellerId);
-    event requestApproved(address _buyerId);
+    event LandRequested(address _sellerId);
+    event RequestApproved(uint _reqId);
     event Verified(address _id);
     event Rejected(address _id);
 
-    constructor() public{
-        Land_Inspector = msg.sender ;
-        addLandInspector("Inspector 1", 45, "Tehsil Manager");
+    modifier onlyLandInspector() {
+        require(
+            msg.sender == Land_Inspector,
+            "Only land inspector can call this function"
+        );
+        _;
     }
 
-    function addLandInspector(string memory _name, uint _age, string memory _designation) private {
+    modifier onlyOwner() {
+        require(
+            msg.sender == contractOwner.ownerAddress,
+            "Only Contract Owner can call this function"
+        );
+        _;
+    }
+
+    modifier onlySeller() {
+        require(isSeller(msg.sender), "Caller is not a registered seller");
+        _;
+    }
+
+    modifier onlyBuyer() {
+        require(isBuyer(msg.sender), "Caller is not a registered buyer");
+        _;
+    }
+
+    constructor() {
+        contractOwner.ownerAddress = msg.sender;
+    }
+
+    function addLandInspector(
+        string memory _name,
+        uint _age,
+        string memory _designation
+    ) public onlyOwner {
         inspectorsCount++;
-        InspectorMapping[inspectorsCount] = LandInspector(inspectorsCount, _name, _age, _designation);
+        InspectorMapping[inspectorsCount] = LandInspector(
+            inspectorsCount,
+            _name,
+            _age,
+            _designation
+        );
+    }
+
+    function addLand(
+        uint _area,
+        string memory _city,
+        string memory _state,
+        uint _landPrice,
+        uint _propertyPID,
+        uint _surveyNum,
+        string memory _ipfsHash,
+        string memory _document
+    ) public onlySeller {
+        require(isVerified(msg.sender), "Seller is not verified");
+
+        landsCount++;
+        lands[landsCount] = Landreg(
+            landsCount,
+            _area,
+            _city,
+            _state,
+            _landPrice,
+            _propertyPID,
+            _surveyNum,
+            _ipfsHash,
+            _document
+        );
+        LandOwner[landsCount] = msg.sender;
+    }
+
+    function registerSeller(
+        string memory _name,
+        uint _age,
+        string memory _aadharNumber,
+        string memory _panNumber,
+        string memory _landsOwned,
+        string memory _document
+    ) public {
+        require(
+            !RegisteredAddressMapping[msg.sender],
+            "Seller is already registered"
+        );
+
+        RegisteredAddressMapping[msg.sender] = true;
+        RegisteredSellerMapping[msg.sender] = true;
+        sellersCount++;
+        SellerMapping[msg.sender] = Seller(
+            msg.sender,
+            _name,
+            _age,
+            _aadharNumber,
+            _panNumber,
+            _landsOwned,
+            _document
+        );
+        sellers.push(msg.sender);
+
+        emit Registration(msg.sender);
+    }
+
+    function registerBuyer(
+        string memory _name,
+        uint _age,
+        string memory _city,
+        string memory _aadharNumber,
+        string memory _panNumber,
+        string memory _document,
+        string memory _email
+    ) public {
+        require(
+            !RegisteredAddressMapping[msg.sender],
+            "Buyer is already registered"
+        );
+
+        RegisteredAddressMapping[msg.sender] = true;
+        RegisteredBuyerMapping[msg.sender] = true;
+        buyersCount++;
+        BuyerMapping[msg.sender] = Buyer(
+            msg.sender,
+            _name,
+            _age,
+            _city,
+            _aadharNumber,
+            _panNumber,
+            _document,
+            _email
+        );
+        buyers.push(msg.sender);
+
+        emit Registration(msg.sender);
+    }
+
+    function requestLand(address _sellerId, uint _landId) public onlyBuyer {
+        require(isVerified(msg.sender), "Buyer is not verified");
+
+        requestsCount++;
+        RequestsMapping[requestsCount] = LandRequest(
+            requestsCount,
+            _sellerId,
+            msg.sender,
+            _landId
+        );
+        RequestStatus[requestsCount] = false;
+        RequestedLands[requestsCount] = true;
+
+        emit LandRequested(_sellerId);
+    }
+
+    function approveRequest(uint _reqId) public onlySeller {
+        RequestStatus[_reqId] = true;
+
+        emit RequestApproved(_reqId);
+    }
+
+    function verifySeller(address _sellerId) public onlyLandInspector {
+        SellerVerification[_sellerId] = true;
+        emit Verified(_sellerId);
+    }
+
+    function rejectSeller(address _sellerId) public onlyLandInspector {
+        SellerRejection[_sellerId] = true;
+        emit Rejected(_sellerId);
+    }
+
+    function verifyBuyer(address _buyerId) public onlyLandInspector {
+        BuyerVerification[_buyerId] = true;
+        emit Verified(_buyerId);
+    }
+
+    function rejectBuyer(address _buyerId) public onlyLandInspector {
+        BuyerRejection[_buyerId] = true;
+        emit Rejected(_buyerId);
+    }
+
+    function verifyLand(uint _landId) public onlyLandInspector {
+        LandVerification[_landId] = true;
+    }
+
+    function isLandVerified(uint _id) public view returns (bool) {
+        return LandVerification[_id];
+    }
+
+    function isVerified(address _id) public view returns (bool) {
+        return SellerVerification[_id] || BuyerVerification[_id];
+    }
+
+    function isRejected(address _id) public view returns (bool) {
+        return SellerRejection[_id] || BuyerRejection[_id];
+    }
+
+    function isSeller(address _id) public view returns (bool) {
+        return RegisteredSellerMapping[_id];
+    }
+
+    function isBuyer(address _id) public view returns (bool) {
+        return RegisteredBuyerMapping[_id];
+    }
+
+    function isLandInspector(address _id) public view returns (bool) {
+        return Land_Inspector == _id;
+    }
+
+    function isRegistered(address _id) public view returns (bool) {
+        return RegisteredAddressMapping[_id];
     }
 
     function getLandsCount() public view returns (uint) {
         return landsCount;
     }
 
-    function getBuyersCount() public view returns (uint) {
-        return buyersCount;
-    }
-
     function getSellersCount() public view returns (uint) {
         return sellersCount;
     }
 
-    function getRequestsCount() public view returns (uint) {
-        return requestsCount;
-    }
-    function getArea(uint i) public view returns (uint) {
-        return lands[i].area;
-    }
-    function getCity(uint i) public view returns (string memory) {
-        return lands[i].city;
-    }
-     function getState(uint i) public view returns (string memory) {
-        return lands[i].state;
-    }
-    // function getStatus(uint i) public view returns (bool) {
-    //     return lands[i].verificationStatus;
-    // }
-    function getPrice(uint i) public view returns (uint) {
-        return lands[i].landPrice;
-    }
-    function getPID(uint i) public view returns (uint) {
-        return lands[i].propertyPID;
-    }
-    function getSurveyNumber(uint i) public view returns (uint) {
-        return lands[i].physicalSurveyNumber;
-    }
-    function getImage(uint i) public view returns (string memory) {
-        return lands[i].ipfsHash;
-    }
-    function getDocument(uint i) public view returns (string memory) {
-        return lands[i].document;
-    }
-    
-    function getLandOwner(uint id) public view returns (address) {
-        return LandOwner[id];
+    function getBuyersCount() public view returns (uint) {
+        return buyersCount;
     }
 
-    function verifySeller(address _sellerId) public{
-        require(isLandInspector(msg.sender));
-
-        SellerVerification[_sellerId] = true;
-        emit Verified(_sellerId);
+    function getSeller() public view returns (address[] memory) {
+        return (sellers);
     }
 
-    function rejectSeller(address _sellerId) public{
-        require(isLandInspector(msg.sender));
-
-        SellerRejection[_sellerId] = true;
-        emit Rejected(_sellerId);
+    function getSellerDetails(
+        address i
+    )
+        public
+        view
+        returns (
+            string memory,
+            uint,
+            string memory,
+            string memory,
+            string memory,
+            string memory
+        )
+    {
+        return (
+            SellerMapping[i].name,
+            SellerMapping[i].age,
+            SellerMapping[i].aadharNumber,
+            SellerMapping[i].panNumber,
+            SellerMapping[i].landsOwned,
+            SellerMapping[i].document
+        );
     }
 
-    function verifyBuyer(address _buyerId) public{
-        require(isLandInspector(msg.sender));
-
-        BuyerVerification[_buyerId] = true;
-        emit Verified(_buyerId);
+    function getBuyer() public view returns (address[] memory) {
+        return (buyers);
     }
 
-    function rejectBuyer(address _buyerId) public{
-        require(isLandInspector(msg.sender));
-
-        BuyerRejection[_buyerId] = true;
-        emit Rejected(_buyerId);
-    }
-    
-    function verifyLand(uint _landId) public{
-        require(isLandInspector(msg.sender));
-
-        LandVerification[_landId] = true;
-    }
-
-    function isLandVerified(uint _id) public view returns (bool) {
-        if(LandVerification[_id]){
-            return true;
-        }
-    }
-
-    function isVerified(address _id) public view returns (bool) {
-        if(SellerVerification[_id] || BuyerVerification[_id]){
-            return true;
-        }
-    }
-
-    function isRejected(address _id) public view returns (bool) {
-        if(SellerRejection[_id] || BuyerRejection[_id]){
-            return true;
-        }
+    function getBuyerDetails(
+        address i
+    )
+        public
+        view
+        returns (
+            string memory,
+            string memory,
+            string memory,
+            string memory,
+            string memory,
+            uint,
+            string memory
+        )
+    {
+        return (
+            BuyerMapping[i].name,
+            BuyerMapping[i].city,
+            BuyerMapping[i].panNumber,
+            BuyerMapping[i].document,
+            BuyerMapping[i].email,
+            BuyerMapping[i].age,
+            BuyerMapping[i].aadharNumber
+        );
     }
 
-    function isSeller(address _id) public view returns (bool) {
-        if(RegisteredSellerMapping[_id]){
-            return true;
-        }
-    }
-
-    function isLandInspector(address _id) public view returns (bool) {
-        if(Land_Inspector == _id){
-            return true;
-        }else{
-            return false;
-        }
-    }
-
-    function isBuyer(address _id) public view returns (bool) {
-        if(RegisteredBuyerMapping[_id]){
-            return true;
-        }
-    }
-    function isRegistered(address _id) public view returns (bool) {
-        if(RegisteredAddressMapping[_id]){
-            return true;
-        }
-    }
-
-    function addLand(uint _area, string memory _city,string memory _state, uint landPrice, uint _propertyPID,uint _surveyNum,string memory _ipfsHash, string memory _document) public {
-        require((isSeller(msg.sender)) && (isVerified(msg.sender)));
-        landsCount++;
-        lands[landsCount] = Landreg(landsCount, _area, _city, _state, landPrice,_propertyPID, _surveyNum, _ipfsHash, _document);
-        LandOwner[landsCount] = msg.sender;
-        // emit AddingLand(landsCount);
-    }
-
-    //registration of seller
-    function registerSeller(string memory _name, uint _age, string memory _aadharNumber, string memory _panNumber, string memory _landsOwned, string memory _document) public {
-        //require that Seller is not already registered
-        require(!RegisteredAddressMapping[msg.sender]);
-
-        RegisteredAddressMapping[msg.sender] = true;
-        RegisteredSellerMapping[msg.sender] = true ;
-        sellersCount++;
-        SellerMapping[msg.sender] = Seller(msg.sender, _name, _age, _aadharNumber,_panNumber, _landsOwned, _document);
-        sellers.push(msg.sender);
-        emit Registration(msg.sender);
-    }
-
-    function updateSeller(string memory _name, uint _age, string memory _aadharNumber, string memory _panNumber, string memory _landsOwned) public {
-        //require that Seller is already registered
-        require(RegisteredAddressMapping[msg.sender] && (SellerMapping[msg.sender].id == msg.sender));
-
-        SellerMapping[msg.sender].name = _name;
-        SellerMapping[msg.sender].age = _age;
-        SellerMapping[msg.sender].aadharNumber = _aadharNumber;
-        SellerMapping[msg.sender].panNumber = _panNumber;
-        SellerMapping[msg.sender].landsOwned = _landsOwned;
-
-    }
-
-    function getSeller() public view returns( address [] memory ){
-        return(sellers);
-    }
-
-    function getSellerDetails(address i) public view returns (string memory, uint, string memory, string memory, string memory, string memory) {
-        return (SellerMapping[i].name, SellerMapping[i].age, SellerMapping[i].aadharNumber, SellerMapping[i].panNumber, SellerMapping[i].landsOwned, SellerMapping[i].document);
-    }
-
-    function registerBuyer(string memory _name, uint _age, string memory _city, string memory _aadharNumber, string memory _panNumber, string memory _document, string memory _email) public {
-        //require that Buyer is not already registered
-        require(!RegisteredAddressMapping[msg.sender]);
-
-        RegisteredAddressMapping[msg.sender] = true;
-        RegisteredBuyerMapping[msg.sender] = true ;
-        buyersCount++;
-        BuyerMapping[msg.sender] = Buyer(msg.sender, _name, _age, _city, _aadharNumber, _panNumber, _document, _email);
-        buyers.push(msg.sender);
-
-        emit Registration(msg.sender);
-    }
-
-    function updateBuyer(string memory _name,uint _age, string memory _city,string memory _aadharNumber, string memory _email, string memory _panNumber) public {
-        //require that Buyer is already registered
-        require(RegisteredAddressMapping[msg.sender] && (BuyerMapping[msg.sender].id == msg.sender));
-
-        BuyerMapping[msg.sender].name = _name;
-        BuyerMapping[msg.sender].age = _age;
-        BuyerMapping[msg.sender].city = _city;
-        BuyerMapping[msg.sender].aadharNumber = _aadharNumber;
-        BuyerMapping[msg.sender].email = _email;
-        BuyerMapping[msg.sender].panNumber = _panNumber;
-        
-    }
-
-    function getBuyer() public view returns( address [] memory ){
-        return(buyers);
-    }
-
-    function getBuyerDetails(address i) public view returns ( string memory,string memory, string memory, string memory, string memory, uint, string memory) {
-        return (BuyerMapping[i].name,BuyerMapping[i].city , BuyerMapping[i].panNumber, BuyerMapping[i].document, BuyerMapping[i].email, BuyerMapping[i].age, BuyerMapping[i].aadharNumber);
-    }
-
-
-    function requestLand(address _sellerId, uint _landId) public{
-        require(isBuyer(msg.sender) && isVerified(msg.sender));
-        
-        requestsCount++;
-        RequestsMapping[requestsCount] = LandRequest(requestsCount, _sellerId, msg.sender, _landId);
-        RequestStatus[requestsCount] = false;
-        RequestedLands[requestsCount] = true;
-
-        emit Landrequested(_sellerId);
-    }
-
-    function getRequestDetails (uint i) public view returns (address, address, uint, bool) {
-        return(RequestsMapping[i].sellerId, RequestsMapping[i].buyerId, RequestsMapping[i].landId, RequestStatus[i]);
+    function getRequestDetails(
+        uint i
+    ) public view returns (address, address, uint, bool) {
+        return (
+            RequestsMapping[i].sellerId,
+            RequestsMapping[i].buyerId,
+            RequestsMapping[i].landId,
+            RequestStatus[i]
+        );
     }
 
     function isRequested(uint _id) public view returns (bool) {
-        if(RequestedLands[_id]){
-            return true;
-        }
+        return RequestedLands[_id];
     }
 
     function isApproved(uint _id) public view returns (bool) {
-        if(RequestStatus[_id]){
-            return true;
-        }
+        return RequestStatus[_id];
     }
 
-    function approveRequest(uint _reqId) public {
-        require((isSeller(msg.sender)) && (isVerified(msg.sender)));
-       
-        RequestStatus[_reqId] = true;
-
-    }
-
-    function LandOwnershipTransfer(uint _landId, address _newOwner) public{
+    function LandOwnershipTransfer(uint _landId, address _newOwner) public {
         require(isLandInspector(msg.sender));
 
         LandOwner[_landId] = _newOwner;
     }
 
     function isPaid(uint _landId) public view returns (bool) {
-        if(PaymentReceived[_landId]){
-            return true;
-        }
+        return PaymentReceived[_landId];
     }
 
-    function payment(address payable _receiver, uint _landId) public payable {
+    function payment(
+        address payable _receiver,
+        uint _landId,
+        uint _landPrice
+    ) public payable {
+        require(msg.value >= _landPrice, "Insufficient payment amount");
+
         PaymentReceived[_landId] = true;
-        _receiver.transfer(msg.value);
+        _receiver.transfer(_landPrice);
     }
-
-
-
 }

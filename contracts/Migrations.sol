@@ -1,10 +1,13 @@
-pragma solidity >=0.4.21 <0.6.0;
+// SPDX-License-Identifier: GPL-3.0
+
+pragma solidity >=0.7.0 <0.9.0;
+pragma experimental ABIEncoderV2;
 
 contract Migrations {
     address public owner;
     uint public last_completed_migration;
 
-    constructor() public {
+    constructor() {
         owner = msg.sender;
     }
 
