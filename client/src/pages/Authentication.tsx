@@ -82,11 +82,6 @@ export default function Authentication() {
                 <div>
 
                     <div className="flex flex-col">
-                        {/* <div className="flex justify-center flex-row space-x-10">
-                            <Button>Land Inspector</Button>
-                            <Button>Contract Owner</Button>
-
-                        </div> */}
                         <div className="lg:p-8 flex justify-center">
 
                             <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[400px]">
