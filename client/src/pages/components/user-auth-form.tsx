@@ -27,6 +27,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
             const web3 = await getWeb3(privateKey);
             //@ts-ignore
             const accounts = await web3.eth.getAccounts();
+            console.log(accounts)
             //@ts-ignore
             const networkId = await web3.eth.net.getId();
             //@ts-ignore
