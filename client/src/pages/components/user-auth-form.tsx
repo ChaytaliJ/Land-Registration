@@ -17,7 +17,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
 
         try {
 
-            const isLandInspector = await contractInstance.methods.isLandInspector(privateKey).call()
+            const isLandInspector = await contractInstance?.methods.isLandInspector(privateKey).call()
 
             if (isLandInspector) {
                 navigate('/land-inspector/dashboard')
