@@ -16,8 +16,18 @@ export default function LandCardContainer({ islandgallery }) {
             }
             else {
                 const landsData = await contractInstance?.methods?.getAllLandIds().call();
+                const Verified: any = []
+                for (let i = 0; i < landsData.length; i++) {
 
-                setUserLands(landsData);
+                    const landVerification = await contractInstance?.methods?.isLandVerified(parseInt(landsData[i])).call();
+                    const landInfo = await contractInstance?.methods?.getLandInfo(parseInt(landsData[i])).call();
+                    const landOwner = landInfo[9]
+                    if (landVerification && landOwner != privateKey) {
+                        Verified.push(landsData[i])
+                    }
+                }
+
+                setUserLands(Verified);
             }
             setLoading(false);
         } catch (error) {

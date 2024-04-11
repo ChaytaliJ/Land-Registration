@@ -49,7 +49,7 @@ export default function Landcard({ islandgallery, landId }) {
             </div>
             <div className="border-t w-full border-gray my-3"></div>
             <div className="flex flex-row items-center justify-center pb-4 space-x-10"> {/* Modified line */}
-                {islandgallery ? (<Button>Send Request to Buy</Button>) : (<Button variant="outline" disabled>Make it for sale</Button>)}
+                {islandgallery && (<Button>Send Request to Buy</Button>)}
                 <Button variant="outline">View details</Button>
             </div>
 
