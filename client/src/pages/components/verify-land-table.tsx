@@ -8,29 +8,62 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
-
-const lands = [
-
-    {
-        land: "1",
-        owneraddress: "JSDFJ982789343803294809OI34II32",
-        area: "pune, Maharashtra",
-        price: "50,000",
-        pid: "qed3324234addaadf",
-        survey: "11",
-    },
-    {
-        land: "1",
-        owneraddress: "JSDFJ982789343803294809OI34II32",
-        area: "pune, Maharashtra",
-        price: "50,000",
-        pid: "qed3324234addaadf",
-        survey: "12",
-    },
-]
+import useContract from "@/hooks/useContract";
+import { useCallback, useEffect, useState } from "react";
 
 
-export default function VerifyLandTable() {
+
+
+export default function VerifyLandTable({ Lands }) {
+    const privateKey = localStorage.getItem('key')
+    const contractInstance: any = useContract();
+    const [landsInfo, setlandsInfo] = useState([])
+
+    const getLands = useCallback(async () => {
+        try {
+            const LandsDetails = [];
+            for (let i = 0; i < Lands?.length; i++) {
+                const landDetails = await contractInstance?.methods?.getLandInfo(Lands[i]).call();
+                const isVerified = await contractInstance?.methods?.isLandVerified(Lands[i]).call();
+                LandsDetails.push({
+                    index: parseInt(landDetails[0]),
+                    area: landDetails[1].toString(),
+                    state: landDetails[3],
+                    price: parseInt(landDetails[4]),
+                    pid: parseInt(landDetails[5]),
+                    survey: parseInt(landDetails[6]),
+                    // document: UserDetails[3],
+                    owneraddress: landDetails[9],
+                    verificationStatus: isVerified
+                });
+            }
+
+            setlandsInfo(LandsDetails);
+            console.log(landsInfo);
+        } catch (error) {
+            console.log(error);
+        }
+    }, [contractInstance, Lands])
+
+    useEffect(() => {
+        getLands();
+    }, [getLands]);
+
+
+    async function LandVerification(id: number) {
+        try {
+            const verify = await contractInstance.methods.verifyLand(id).send({ from: `${privateKey}`, gas: '2000000', gasPrice: '5000000000' });
+            console.log({ verify });
+            window.location.reload()
+            // console.log(verify);
+        }
+        catch (error) {
+            console.log(error);
+            alert('Error occurred while verifying user. Please try again later.');
+        }
+    }
+
+
     return (
         <div>   <Table>
             <TableHeader>
@@ -48,9 +81,9 @@ export default function VerifyLandTable() {
                 </TableRow>
             </TableHeader>
             <TableBody>
-                {lands.map((land) => (
-                    <TableRow key={land.land}>
-                        <TableCell className="font-medium">{land.land}</TableCell>
+                {landsInfo?.map((land) => (
+                    <TableRow key={land.index}>
+                        <TableCell className="font-medium">{land.index}</TableCell>
                         <TableCell className="font-medium">{land.owneraddress}</TableCell>
                         <TableCell className="font-medium">{land.area}</TableCell>
                         <TableCell className="font-medium">{land.price}</TableCell>
@@ -58,17 +91,18 @@ export default function VerifyLandTable() {
                         <TableCell className="font-medium">{land.survey}</TableCell>
                         <TableCell className="underline"><a href="/document" >View Document</a></TableCell>
                         <TableCell >
-                            <Button className="h-8">Verify</Button>
+                            {
+                                land.verificationStatus ?
+                                    (<Button className="h-8" disabled >Verified</Button>)
+                                    : (<Button className="h-8"
+                                        onClick={() => LandVerification(land.index)}>Verify</Button>)
+                            }
+
                         </TableCell>
                     </TableRow>
                 ))}
             </TableBody>
-            {/* <TableFooter>
-    <TableRow>
-        <TableCell colSpan={3}>Total</TableCell>
-        <TableCell className="text-right">$2,500.00</TableCell>
-    </TableRow>
-</TableFooter> */}
+
         </Table></div>
     )
 }

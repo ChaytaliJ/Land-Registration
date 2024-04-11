@@ -14,6 +14,7 @@ contract Land {
         uint physicalSurveyNumber;
         string ipfsHash;
         string document;
+        address landOwner;
     }
 
     struct User {
@@ -124,7 +125,8 @@ contract Land {
             _propertyPID,
             _surveyNum,
             _ipfsHash,
-            _document
+            _document,
+            msg.sender
         );
         LandOwner[landsCount] = msg.sender;
         userOwnedLands[msg.sender].push(landsCount);
