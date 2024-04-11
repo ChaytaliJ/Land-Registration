@@ -1,6 +1,10 @@
+
 import LandInspectorInfoContainer from "../components/land-inspector-info-container";
 
+
 export default function LandInspectorHomePage() {
+
+
     return (
         <div className="flex items-center flex-col">
 

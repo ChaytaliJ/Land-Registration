@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 pragma solidity >=0.5.2;
-// pragma experimental ABIEncoderV2;
+pragma experimental ABIEncoderV2;
 
 contract Land {
     struct Landreg {
@@ -42,6 +42,7 @@ contract Land {
     }
 
     mapping(uint => Landreg) public lands;
+    mapping(address => uint[]) public userOwnedLands;
     mapping(uint => LandInspector) public InspectorMapping;
     mapping(address => User) public UserMapping;
     mapping(uint => LandRequest) public RequestsMapping;
@@ -62,6 +63,7 @@ contract Land {
     uint public inspectorsCount;
     uint public usersCount;
     uint public requestsCount;
+    uint[] public landIds;
 
     event Registration(address _registrationId);
     event LandRequested(address _sellerId);
@@ -81,7 +83,7 @@ contract Land {
         _;
     }
 
-    constructor() {
+    constructor() public {
         Land_Inspector = msg.sender;
         addLandInspector("Inspector 1", 45, "Tehsil Manager");
     }
@@ -125,6 +127,12 @@ contract Land {
             _document
         );
         LandOwner[landsCount] = msg.sender;
+        userOwnedLands[msg.sender].push(landsCount);
+        landIds.push(landsCount);
+    }
+
+    function getAllLandIds() public view returns (uint[] memory) {
+        return landIds;
     }
 
     function registerUser(
@@ -229,6 +237,16 @@ contract Land {
 
     function getUser() public view returns (address[] memory) {
         return (users);
+    }
+
+    function getUserOwnedLands(
+        address user
+    ) public view returns (uint[] memory) {
+        return userOwnedLands[user];
+    }
+
+    function getLandInfo(uint landId) public view returns (Landreg memory) {
+        return lands[landId];
     }
 
     function getBuyerDetails(

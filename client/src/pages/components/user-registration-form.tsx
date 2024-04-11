@@ -1,7 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,6 +13,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useNavigate } from "react-router-dom";
+import useContract from "@/hooks/useContract";
 
 
 const profileFormSchema = z.object({
@@ -29,16 +29,36 @@ type ProfileFormValues = z.infer<typeof profileFormSchema>;
 
 export default function UserRegistrationForm() {
     const navigate = useNavigate()
+
+    const contractInstance: any = useContract();
+
+    const privateKey = localStorage.getItem('key');
     const form = useForm<ProfileFormValues>({
         resolver: zodResolver(profileFormSchema),
         mode: "onChange",
     });
 
+    async function FormHandler(data: any) {
+
+        try {
+
+
+            const RegisterUser = await contractInstance.methods.registerUser(data.username, data.age, data.city, data.adhaarCardNo, data.panCardNo, "xyz", data.email).send({ from: `${privateKey}`, gas: '2000000', gasPrice: '5000000000' })
+
+            console.log("Transaction receipt:", RegisterUser);
+            navigate('/user/dashboard')
+        }
+
+        catch (error) {
+            console.log(error);
+        }
+
+    }
+
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit((data) => {
-                navigate('/user/dashboard')
-                console.log(data)
+            <form onSubmit={form.handleSubmit((data: any) => {
+                FormHandler(data);
             })} className="space-y-2">
                 <FormField
                     control={form.control}

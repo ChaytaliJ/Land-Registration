@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useNavigate } from "react-router-dom";
+import useContract from "@/hooks/useContract";
 
 
 const profileFormSchema = z.object({
@@ -29,15 +30,36 @@ type ProfileFormValues = z.infer<typeof profileFormSchema>;
 
 export default function LandRegistrationForm() {
     const navigate = useNavigate()
+    const contractInstance: any = useContract()
+    const privateKey = localStorage.getItem('key')
     const form = useForm<ProfileFormValues>({
         resolver: zodResolver(profileFormSchema),
         mode: "onChange",
     });
 
+
+    async function FormHandler(data: any) {
+
+        try {
+
+
+            const RegisterLand = await contractInstance.methods.addLand(data.area, data.city, data.state, data.price, data.pid, data.survey, "hash", "xyz").send({ from: `${privateKey}`, gas: '2000000', gasPrice: '5000000000' })
+
+            console.log("Transaction receipt:", RegisterLand);
+            navigate('/user/dashboard')
+        }
+
+        catch (error) {
+            console.log(error);
+        }
+
+    }
+
     return (
         <Form {...form}>
             <form onSubmit={form.handleSubmit((data) => {
-                navigate('/user/dashboard')
+                FormHandler(data);
+                // navigate('/user/dashboard')
                 console.log(data)
             })} className="space-y-2">
                 <FormField
@@ -121,6 +143,10 @@ export default function LandRegistrationForm() {
                 />
                 <div className="grid w-full max-w-sm items-center gap-1.5">
                     <Label htmlFor="picture">Document</Label>
+                    <Input id="document" type="file" />
+                </div>
+                <div className="grid w-full max-w-sm items-center gap-1.5">
+                    <Label htmlFor="picture">Land Image</Label>
                     <Input id="picture" type="file" />
                 </div>
                 <div className="pt-6">

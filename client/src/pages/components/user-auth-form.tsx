@@ -2,54 +2,40 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import LandContract from "../../artifacts/Land.json"
 import { useNavigate } from "react-router-dom";
-import getWeb3 from "../../Web3"
-import { useState } from "react";
+import useContract from "@/hooks/useContract";
 
 
 interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> { }
 
 export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
-
+    const contractInstance: any = useContract();
 
     const navigate = useNavigate()
-    // const [role, setRole] = useState(null);
-    // const [redirect, setRedirect] = useState(null);
-    // const [landInspector, setLandInspector] = useState('');
-    // const [seller, setSeller] = useState('');
-    // const [buyer, setBuyer] = useState('');
 
-    async function getAddresses(privateKey: string) {
+    async function handleLogin(privateKey: string) {
 
         try {
-            //@ts-ignore
-            const web3 = await getWeb3(privateKey);
-            //@ts-ignore
-            const accounts = await web3.eth.getAccounts();
-            console.log(accounts)
-            //@ts-ignore
-            const networkId = await web3.eth.net.getId();
-            //@ts-ignore
-            const deployedNetwork = LandContract.networks[networkId];
-            //@ts-ignore
-            const instance = new web3.eth.Contract(
-                LandContract.abi,
-                deployedNetwork && deployedNetwork.address,
-            );
 
-            console.log("hello");
-            // const currentAddress = await web3.currentProvider.selectedAddress;
+            const isLandInspector = await contractInstance.methods.isLandInspector(privateKey).call()
 
-            // setSeller(await instance.methods.isSeller(currentAddress).call());
-            // setBuyer(await instance.methods.isBuyer(currentAddress).call());
-            // setLandInspector(await instance.methods.isLandInspector(currentAddress).call());
+            if (isLandInspector) {
+                navigate('/land-inspector/dashboard')
+            }
+            else {
+                const isRegisteredUser = await contractInstance.methods.isUser(privateKey).call()
+
+                if (isRegisteredUser) {
+                    navigate('/user/dashboard')
+                }
+                else {
+                    navigate('/user/registration')
+                }
+
+            }
 
         }
         catch (error) {
-            alert(
-                `Failed to load web3, accounts, or contract. Check console for details.`,
-            );
             console.error(error);
         }
     }
@@ -76,8 +62,8 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
 
                     <Button onClick={() => {
                         const privateKey = (document.getElementById("email") as HTMLInputElement).value;
-                        getAddresses(privateKey);
-                        // navigate(`user/registration`)
+                        localStorage.setItem("key", privateKey);
+                        handleLogin(privateKey);
                     }
                     }
                     >
