@@ -14,7 +14,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { useNavigate } from "react-router-dom";
 import useContract from "@/hooks/useContract";
-
+import { useState } from "react";
+import useFileUpload from "@/hooks/useFileUpload";
 
 const profileFormSchema = z.object({
     username: z.string().min(2, "Username must be at least 2 characters.").max(30, "Username must not be longer than 30 characters."),
@@ -29,7 +30,7 @@ type ProfileFormValues = z.infer<typeof profileFormSchema>;
 
 export default function UserRegistrationForm() {
     const navigate = useNavigate()
-
+    // const [documentHash, setdocumentHash] = useState()
     const contractInstance: any = useContract();
 
     const privateKey = localStorage.getItem('key');
@@ -38,12 +39,19 @@ export default function UserRegistrationForm() {
         mode: "onChange",
     });
 
+    const { uploadFile, documentHash, uploadProgress } = useFileUpload();
+
+    const handleFileUpload = (event: any) => {
+        const file = event.target.files;
+        uploadFile(file);
+    };
+
     async function FormHandler(data: any) {
 
         try {
 
 
-            const RegisterUser = await contractInstance.methods.registerUser(data.username, data.age, data.city, data.adhaarCardNo, data.panCardNo, "xyz", data.email).send({ from: `${privateKey}`, gas: '2000000', gasPrice: '5000000000' })
+            const RegisterUser = await contractInstance.methods.registerUser(data.username, data.age, data.city, data.adhaarCardNo, data.panCardNo, documentHash, data.email).send({ from: `${privateKey}`, gas: '2000000', gasPrice: '5000000000' })
 
             console.log("Transaction receipt:", RegisterUser);
             navigate('/user/dashboard')
@@ -127,7 +135,8 @@ export default function UserRegistrationForm() {
                 />
                 <div className="grid w-full max-w-sm items-center gap-1.5">
                     <Label htmlFor="picture">Document</Label>
-                    <Input id="picture" type="file" />
+                    <Input onChange={handleFileUpload} id="picture" type="file" />
+                    <div>{uploadProgress}</div>
                 </div>
                 <FormField
                     control={form.control}

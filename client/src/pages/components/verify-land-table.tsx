@@ -3,7 +3,6 @@ import {
     Table,
     TableBody,
     TableCell,
-    // TableFooter,
     TableHead,
     TableHeader,
     TableRow,
@@ -32,7 +31,8 @@ export default function VerifyLandTable({ Lands }) {
                     price: parseInt(landDetails[4]),
                     pid: parseInt(landDetails[5]),
                     survey: parseInt(landDetails[6]),
-                    // document: UserDetails[3],
+                    document: landDetails[8],
+                    image: landDetails[7],
                     owneraddress: landDetails[9],
                     verificationStatus: isVerified
                 });
@@ -55,7 +55,6 @@ export default function VerifyLandTable({ Lands }) {
             const verify = await contractInstance.methods.verifyLand(id).send({ from: `${privateKey}`, gas: '2000000', gasPrice: '5000000000' });
             console.log({ verify });
             window.location.reload()
-            // console.log(verify);
         }
         catch (error) {
             console.log(error);
@@ -77,6 +76,8 @@ export default function VerifyLandTable({ Lands }) {
                     <TableHead className="w-[100px]">Survey No</TableHead>
 
                     <TableHead className="w-[150px]">Document</TableHead>
+                    <TableHead className="w-[150px]">Image</TableHead>
+
                     <TableHead className="w-[150px]">Verify</TableHead>
                 </TableRow>
             </TableHeader>
@@ -89,7 +90,8 @@ export default function VerifyLandTable({ Lands }) {
                         <TableCell className="font-medium">{land.price + " ETH"}</TableCell>
                         <TableCell className="font-medium">{land.pid}</TableCell>
                         <TableCell className="font-medium">{land.survey}</TableCell>
-                        <TableCell className="underline"><a href="/document" >View Document</a></TableCell>
+                        <TableCell className="underline"><a href={"https://gateway.lighthouse.storage/ipfs/" + land.document}>View Document</a></TableCell>
+                        <TableCell className="underline"><a href={"https://gateway.lighthouse.storage/ipfs/" + land.image}>View Image</a></TableCell>
                         <TableCell >
                             {
                                 land.verificationStatus ?

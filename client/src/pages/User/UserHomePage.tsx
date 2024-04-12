@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import useContract from "@/hooks/useContract";
+import { Button } from "@/components/ui/button";
 
 export default function UserHomePage() {
     const [userData, setUserData] = useState({});
@@ -17,7 +18,6 @@ export default function UserHomePage() {
             if (isVerified) {
                 setisUserVerified(true)
             }
-
             setUserData({
                 name: UserData[0],
                 city: UserData[1],
@@ -57,6 +57,8 @@ export default function UserHomePage() {
                     <p>Adhaar Card No: {userData.adharNumber}</p>
                     <p>Pan Card No: {userData.panNumber}</p>
                     <p>Email: {userData.email}</p>
+                    <a href={"https://gateway.lighthouse.storage/ipfs/" + userData.document}>View Document</a>
+
                 </div>
             )}
         </div>

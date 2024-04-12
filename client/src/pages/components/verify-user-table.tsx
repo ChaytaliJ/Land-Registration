@@ -83,7 +83,7 @@ export default function VerifyUserTable({ Users }) {
                             <TableCell className="font-medium">{user.name}</TableCell>
                             <TableCell className="font-medium">{user.adharNumber}</TableCell>
                             <TableCell className="font-medium">{user.panNumber}</TableCell>
-                            <TableCell className="underline"><a href="/document">View Document</a></TableCell>
+                            <TableCell className="underline"><a href={"https://gateway.lighthouse.storage/ipfs/" + user.document}>View Document</a></TableCell>
                             <TableCell>
                                 {
                                     user.verificationStatus ?

@@ -15,7 +15,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { useNavigate } from "react-router-dom";
 import useContract from "@/hooks/useContract";
-
+import useFileUpload from "@/hooks/useFileUpload";
+import { useState } from "react";
+import lighthouse from '@lighthouse-web3/sdk'
 
 const profileFormSchema = z.object({
     area: z.string({ required_error: "Please enter area." }),
@@ -36,14 +38,16 @@ export default function LandRegistrationForm() {
         resolver: zodResolver(profileFormSchema),
         mode: "onChange",
     });
+    const [ImageHash, setImageHash] = useState()
 
+    const { uploadFile, documentHash, uploadProgress } = useFileUpload();
 
     async function FormHandler(data: any) {
 
         try {
 
 
-            const RegisterLand = await contractInstance.methods.addLand(data.area, data.city, data.state, data.price, data.pid, data.survey, "hash", "xyz").send({ from: `${privateKey}`, gas: '2000000', gasPrice: '5000000000' })
+            const RegisterLand = await contractInstance.methods.addLand(data.area, data.city, data.state, data.price, data.pid, data.survey, ImageHash, documentHash).send({ from: `${privateKey}`, gas: '2000000', gasPrice: '5000000000' })
 
             console.log("Transaction receipt:", RegisterLand);
             navigate('/user/dashboard')
@@ -53,6 +57,20 @@ export default function LandRegistrationForm() {
             console.log(error);
         }
 
+    }
+    //@ts-ignore
+    const progressCallback = (progressData) => {
+        let percentageDone =
+            //@ts-ignore
+            100 - (progressData?.total / progressData?.uploaded)?.toFixed(2)
+        console.log(percentageDone)
+    }
+    const uploadImage = async (file: any) => {
+        //@ts-ignore
+        const output: any = await lighthouse.upload(file, import.meta.env.VITE_LIGHTHOUSE_API_KEY, false, null, progressCallback)
+        setImageHash(output.data.Hash)
+        console.log('File Status:', output)
+        console.log('Visit at https://gateway.lighthouse.storage/ipfs/' + output.data.Hash)
     }
 
     return (
@@ -143,11 +161,15 @@ export default function LandRegistrationForm() {
                 />
                 <div className="grid w-full max-w-sm items-center gap-1.5">
                     <Label htmlFor="picture">Document</Label>
-                    <Input id="document" type="file" />
+                    <Input onChange={(e) => {
+                        uploadFile(e.target.files)
+                    }} id="document" type="file" />
                 </div>
                 <div className="grid w-full max-w-sm items-center gap-1.5">
                     <Label htmlFor="picture">Land Image</Label>
-                    <Input id="picture" type="file" />
+                    <Input onChange={(e) => {
+                        uploadImage(e.target.files)
+                    }} id="picture" type="file" />
                 </div>
                 <div className="pt-6">
                     <Button type="submit">Add</Button>
