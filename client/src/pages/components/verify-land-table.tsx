@@ -86,7 +86,7 @@ export default function VerifyLandTable({ Lands }) {
                         <TableCell className="font-medium">{land.index}</TableCell>
                         <TableCell className="font-medium">{land.owneraddress}</TableCell>
                         <TableCell className="font-medium">{land.area}</TableCell>
-                        <TableCell className="font-medium">{land.price}</TableCell>
+                        <TableCell className="font-medium">{land.price + " ETH"}</TableCell>
                         <TableCell className="font-medium">{land.pid}</TableCell>
                         <TableCell className="font-medium">{land.survey}</TableCell>
                         <TableCell className="underline"><a href="/document" >View Document</a></TableCell>

@@ -8,46 +8,58 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
-
-const invoices = [
-    {
-        invoice: "1",
-        landId: "234234",
-        BuyersAddress: "JSDFJ982789343803294809OI34II32",
-        status: 'pending',
-        payement: 'false'
-    },
-    {
-        invoice: "2",
-        landId: "234234",
-        BuyersAddress: "JSDFJ982789343803294809OI34II32",
-        status: 'pending',
-        payement: 'false'
-    },
-    {
-        invoice: "3",
-        landId: "234234",
-        BuyersAddress: "JSDFJ982789343803294809OI34II32",
-        status: 'pending',
-        payement: 'false'
-    },
-    {
-        invoice: "4",
-        landId: "234234",
-        BuyersAddress: "JSDFJ982789343803294809OI34II32",
-        status: 'pending',
-        payement: 'false'
-    },
-    {
-        invoice: "5",
-        landId: "234234",
-        BuyersAddress: "JSDFJ982789343803294809OI34II32",
-        status: 'pending',
-        payement: 'false'
-    },
-]
+import useContract from "@/hooks/useContract";
+import { useCallback, useEffect, useState } from "react";
 
 export default function UserReceivedRequestTable() {
+    const privateKey = localStorage.getItem('key')
+    const contractInstance: any = useContract();
+    const [SentRequestInfo, setSentRequestInfo] = useState([])
+
+    const getReceivedRequest = useCallback(async () => {
+        try {
+            const ReceivedRequest = await contractInstance?.methods?.getSellerRequestDetails(privateKey).call();
+
+            const formattedData = ReceivedRequest[0].map((_, index: any) => ({
+                request_id: parseInt(ReceivedRequest[0][index]),
+                address: ReceivedRequest[1][index],
+                land_id: parseInt(ReceivedRequest[2][index]),
+                approved: ReceivedRequest[3][index],
+                rejected: ReceivedRequest[4][index]
+            }));
+            console.log(formattedData);
+            setSentRequestInfo(formattedData);
+        } catch (error) {
+            console.log(error);
+        }
+    }, [contractInstance])
+
+    useEffect(() => {
+        getReceivedRequest();
+    }, [getReceivedRequest]);
+
+
+
+    async function RequestApproval(Req_id: number) {
+        try {
+            const approval = await contractInstance?.methods?.approveRequest(Req_id).send(({ from: `${privateKey}`, gas: '2000000', gasPrice: '5000000000' }))
+            console.log(approval);
+        }
+        catch (error) {
+            console.log(error);
+        }
+    }
+
+    async function RequestRejection(Req_id: number) {
+        try {
+            const Rejection = await contractInstance?.methods?.rejectRequest(Req_id).send(({ from: `${privateKey}`, gas: '2000000', gasPrice: '5000000000' }))
+            console.log(Rejection);
+        }
+        catch (error) {
+            console.log(error);
+        }
+    }
+
     return (
         <div>
             <Table>
@@ -64,32 +76,45 @@ export default function UserReceivedRequestTable() {
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {invoices.map((invoice) => (
-                        <TableRow key={invoice.invoice}>
-                            <TableCell className="font-medium">{invoice.invoice}</TableCell>
-                            <TableCell>{invoice.landId}</TableCell>
-                            <TableCell>{invoice.BuyersAddress}</TableCell>
-                            <TableCell>{invoice.status}</TableCell>
-                            <TableCell className="text-center">{invoice.payement}</TableCell>
+                    {SentRequestInfo?.map((request) => (
+                        <TableRow key={request.request_id}>
+                            <TableCell className="font-medium">{request.request_id}</TableCell>
+                            <TableCell className="font-medium">{request.land_id}</TableCell>
+                            <TableCell className="font-medium">{request.address}</TableCell>
+                            <TableCell className="font-medium">{request.rejected ? (<div>Cancelled</div>) : (<div>Pending</div>)}</TableCell>
+                            <TableCell className="text-center font-medium">False</TableCell>
                             <TableCell className="text-center">
                                 <div>
-                                    <Button className="h-8">Accept</Button>
+                                    {
+                                        request.approved ?
+                                            (<Button className="h-8" disabled>Accepted</Button>)
+                                            : (<Button className="h-8" onClick={() => {
+                                                RequestApproval(request.request_id)
+                                            }} disabled={request.rejected}
+                                                variant={request.rejected ? "outline" : "default"}
+                                            >Accept</Button>)
+                                    }
+
 
                                 </div></TableCell>
                             <TableCell className="text-center">
                                 <div>
-                                    <Button className="h-8">Reject</Button>
+                                    {
+                                        request.rejected ?
+                                            (<Button className="h-8" disabled>Rejected</Button>)
+                                            : (<Button className="h-8"
+                                                onClick={() => {
+                                                    RequestRejection(request.request_id)
+
+                                                }} disabled={request.approved}
+                                                variant={request.approved ? "outline" : "default"}>Reject</Button>)
+                                    }
+
 
                                 </div></TableCell>
                         </TableRow>
                     ))}
                 </TableBody>
-                {/* <TableFooter>
-                    <TableRow>
-                        <TableCell colSpan={3}>Total</TableCell>
-                        <TableCell className="text-right">$2,500.00</TableCell>
-                    </TableRow>
-                </TableFooter> */}
             </Table>
         </div>
     )

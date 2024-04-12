@@ -15,6 +15,7 @@ contract Land {
         string ipfsHash;
         string document;
         address landOwner;
+        bool isLandForSale;
     }
 
     struct User {
@@ -40,6 +41,7 @@ contract Land {
         address sellerId;
         address buyerId;
         uint landId;
+        bool isRejected;
     }
 
     mapping(uint => Landreg) public lands;
@@ -126,11 +128,29 @@ contract Land {
             _surveyNum,
             _ipfsHash,
             _document,
-            msg.sender
+            msg.sender,
+            false
         );
         LandOwner[landsCount] = msg.sender;
         userOwnedLands[msg.sender].push(landsCount);
         landIds.push(landsCount);
+    }
+
+    function makeLandForSale(uint _landId) public {
+        require(
+            LandVerification[_landId],
+            "Land must be verified to be put up for sale"
+        );
+        require(
+            LandOwner[_landId] == msg.sender,
+            "Only the land owner can put the land up for sale"
+        );
+
+        lands[_landId].isLandForSale = true;
+    }
+
+    function isLandForSale(uint _landId) public view returns (bool) {
+        return lands[_landId].isLandForSale;
     }
 
     function getAllLandIds() public view returns (uint[] memory) {
@@ -177,7 +197,8 @@ contract Land {
             requestsCount,
             _sellerId,
             msg.sender,
-            _landId
+            _landId,
+            false
         );
         RequestStatus[requestsCount] = false;
         RequestedLands[requestsCount] = true;
@@ -189,6 +210,15 @@ contract Land {
         RequestStatus[_reqId] = true;
 
         emit RequestApproved(_reqId);
+    }
+
+    function rejectRequest(uint _reqId) public {
+        require(
+            RequestsMapping[_reqId].sellerId == msg.sender,
+            "Only the seller can reject the request"
+        );
+
+        RequestsMapping[_reqId].isRejected = true;
     }
 
     function verifyUser(address _userId) public onlyLandInspector {
@@ -286,6 +316,91 @@ contract Land {
             RequestsMapping[i].landId,
             RequestStatus[i]
         );
+    }
+
+    function getBuyerRequestDetails(
+        address _buyer
+    )
+        public
+        view
+        returns (
+            uint[] memory,
+            address[] memory,
+            uint[] memory,
+            bool[] memory,
+            bool[] memory
+        )
+    {
+        uint[] memory reqIds = new uint[](requestsCount);
+        address[] memory sellerIds = new address[](requestsCount);
+        uint[] memory landIds = new uint[](requestsCount);
+        bool[] memory statuses = new bool[](requestsCount);
+        bool[] memory rejections = new bool[](requestsCount);
+
+        uint index = 0;
+        for (uint i = 1; i <= requestsCount; i++) {
+            if (RequestsMapping[i].buyerId == _buyer) {
+                reqIds[index] = RequestsMapping[i].reqId;
+                sellerIds[index] = RequestsMapping[i].sellerId;
+                landIds[index] = RequestsMapping[i].landId;
+                statuses[index] = RequestStatus[i];
+                rejections[index] = RequestsMapping[i].isRejected;
+                index++;
+            }
+        }
+
+        assembly {
+            mstore(reqIds, index)
+            mstore(sellerIds, index)
+            mstore(landIds, index)
+            mstore(statuses, index)
+            mstore(rejections, index)
+        }
+
+        return (reqIds, sellerIds, landIds, statuses, rejections);
+    }
+
+    function getSellerRequestDetails(
+        address _seller
+    )
+        public
+        view
+        returns (
+            uint[] memory,
+            address[] memory,
+            uint[] memory,
+            bool[] memory,
+            bool[] memory
+        )
+    {
+        uint[] memory reqIds = new uint[](requestsCount);
+        address[] memory buyerIds = new address[](requestsCount);
+        uint[] memory landIds = new uint[](requestsCount);
+        bool[] memory statuses = new bool[](requestsCount);
+        bool[] memory rejections = new bool[](requestsCount);
+
+        uint index = 0;
+        for (uint i = 1; i <= requestsCount; i++) {
+            if (RequestsMapping[i].sellerId == _seller) {
+                reqIds[index] = RequestsMapping[i].reqId;
+                buyerIds[index] = RequestsMapping[i].buyerId;
+                landIds[index] = RequestsMapping[i].landId;
+                statuses[index] = RequestStatus[i];
+                rejections[index] = RequestsMapping[i].isRejected;
+                index++;
+            }
+        }
+
+        // Resize arrays to remove any unused slots
+        assembly {
+            mstore(reqIds, index)
+            mstore(buyerIds, index)
+            mstore(landIds, index)
+            mstore(statuses, index)
+            mstore(rejections, index)
+        }
+
+        return (reqIds, buyerIds, landIds, statuses, rejections);
     }
 
     function isRequested(uint _id) public view returns (bool) {

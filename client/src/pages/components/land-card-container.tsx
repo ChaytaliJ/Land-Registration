@@ -21,8 +21,10 @@ export default function LandCardContainer({ islandgallery }) {
 
                     const landVerification = await contractInstance?.methods?.isLandVerified(parseInt(landsData[i])).call();
                     const landInfo = await contractInstance?.methods?.getLandInfo(parseInt(landsData[i])).call();
+                    const isMakeforSale = await contractInstance?.methods?.isLandForSale(parseInt(landsData[i])).call()
+                    const isPayment = await contractInstance?.methods?.isPaid(parseInt(landsData[i])).call()
                     const landOwner = landInfo[9]
-                    if (landVerification && landOwner != privateKey) {
+                    if (landVerification && landOwner != privateKey && isMakeforSale && !isPayment) {
                         Verified.push(landsData[i])
                     }
                 }

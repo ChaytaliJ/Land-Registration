@@ -10,6 +10,7 @@ import { MdVerified } from "react-icons/md";
 import { GoUnverified } from "react-icons/go";
 //@ts-ignore
 export default function Landcard({ islandgallery, landId }) {
+    const privateKey = localStorage.getItem('key')
     const [loading, setLoading] = useState(true);
     const [Land, setLand] = useState()
     const [verification, setVerification] = useState()
@@ -19,6 +20,7 @@ export default function Landcard({ islandgallery, landId }) {
 
             const landDetails = await contractInstance?.methods?.getLandInfo(landId).call();
             const landVerification = await contractInstance?.methods?.isLandVerified(landId).call();
+            const isRequestedToBuy = await contractInstance?.methods?.isRequested(landId).call();
             const details = {
                 index: parseInt(landDetails[0]),
                 area: landDetails[1].toString(),
@@ -29,7 +31,9 @@ export default function Landcard({ islandgallery, landId }) {
                 document: landDetails[3].toString(),
                 ipfshash: landDetails[7].toString(),
                 owneraddress: landDetails[9],
-                verificationStatus: landVerification
+                keepforSale: landDetails[10],
+                verificationStatus: landVerification,
+                isRequested: isRequestedToBuy
             }
             console.log(details);
             setLand(details);
@@ -44,6 +48,33 @@ export default function Landcard({ islandgallery, landId }) {
     useEffect(() => {
         getLandData();
     }, [getLandData]);
+
+
+    async function MakeLandForSaleHandler(id: number) {
+        try {
+            const makeforsale = await contractInstance?.methods?.makeLandForSale(id).send({ from: `${privateKey}`, gas: '2000000', gasPrice: '5000000000' })
+            console.log("land made for sale");
+            console.log(makeforsale);
+            window.location.reload()
+        }
+        catch (error) {
+            console.log(error);
+        }
+
+    }
+
+    async function SendRequestToBuy(seller_id: string, id: number) {
+        try {
+            const requesttobuy = await contractInstance?.methods?.requestLand(seller_id, id).send({ from: `${privateKey}`, gas: '2000000', gasPrice: '5000000000' })
+            console.log(requesttobuy);
+            window.location.reload()
+        }
+        catch (error) {
+            console.log(error);
+        }
+
+    }
+
     return (
         <Card>
             <div className="p-4">
@@ -58,14 +89,17 @@ export default function Landcard({ islandgallery, landId }) {
                 {
                     islandgallery && (<p className="py-2 text-sm">{Land?.owneraddress}</p>)
                 }
-
+                <p className="font-bold text-lg" >{"Id : " + Land?.index}</p>
                 <p className="font-bold text-lg" >{"State : " + Land?.state}</p>
                 <p className="font-bold text-lg" >{"Price : " + Land?.price + " ETH "}</p>
 
             </div>
             <div className="border-t w-full border-gray my-3"></div>
             <div className="flex flex-row items-center justify-center pb-4 space-x-10"> {/* Modified line */}
-                {islandgallery && (<Button>Send Request to Buy</Button>)}
+                {islandgallery ? (Land?.isRequested ? (<div>Requested</div>) : (<Button onClick={() => {
+                    SendRequestToBuy(Land?.owneraddress, Land?.index)
+                }}>Send Request to Buy</Button>)
+                ) : (Land?.keepforSale ? (<div>Kept for selling</div>) : (<Button disabled={!Land?.verificationStatus} variant="outline" onClick={() => { MakeLandForSaleHandler(Land?.index) }}>Make for Sale</Button>))}
                 <Button variant="outline">View details</Button>
             </div>
 
