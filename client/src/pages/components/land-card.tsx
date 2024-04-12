@@ -8,6 +8,7 @@ import useContract from "@/hooks/useContract";
 import { useCallback, useEffect, useState } from "react";
 import { MdVerified } from "react-icons/md";
 import { GoUnverified } from "react-icons/go";
+import Modal from "./Modal";
 //@ts-ignore
 export default function Landcard({ islandgallery, landId }) {
     const privateKey = localStorage.getItem('key')
@@ -28,7 +29,7 @@ export default function Landcard({ islandgallery, landId }) {
                 price: parseInt(landDetails[4]),
                 pid: parseInt(landDetails[5]),
                 survey: parseInt(landDetails[6]),
-                document: landDetails[3].toString(),
+                document: landDetails[8].toString(),
                 ipfshash: landDetails[7].toString(),
                 owneraddress: landDetails[9],
                 keepforSale: landDetails[10],
@@ -49,7 +50,15 @@ export default function Landcard({ islandgallery, landId }) {
         getLandData();
     }, [getLandData]);
 
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
+    const openModal = () => {
+        setIsModalOpen(true);
+    };
+
+    const closeModal = () => {
+        setIsModalOpen(false);
+    };
     async function MakeLandForSaleHandler(id: number) {
         try {
             const makeforsale = await contractInstance?.methods?.makeLandForSale(id).send({ from: `${privateKey}`, gas: '2000000', gasPrice: '5000000000' })
@@ -78,7 +87,7 @@ export default function Landcard({ islandgallery, landId }) {
     return (
         <Card>
             <div className="p-4">
-                <img src={land} alt="land" /></div>
+                <img src={"https://gateway.lighthouse.storage/ipfs/" + Land?.ipfshash} alt="land image" /></div>
 
 
             <div className="pl-8">
@@ -100,11 +109,31 @@ export default function Landcard({ islandgallery, landId }) {
                     SendRequestToBuy(Land?.owneraddress, Land?.index)
                 }}>Send Request to Buy</Button>)
                 ) : (Land?.keepforSale ? (<div>Kept for selling</div>) : (<Button disabled={!Land?.verificationStatus} variant="outline" onClick={() => { MakeLandForSaleHandler(Land?.index) }}>Make for Sale</Button>))}
-                <Button variant="outline">View details</Button>
+                <Button variant="outline" onClick={openModal}>View details</Button>
             </div>
 
+            <Modal isOpen={isModalOpen} onClose={closeModal}>
+                <div className="text-center">
+                    <div className="flex  justify-center flex-row space-x-2 mb-2 "><p className="font-extrabold text-2xl">Land Information</p></div>
+                    <div className="mb-4">
+                        <h2 className="text-lg font-bold">Owner</h2>
+                        <p className="text-gray-700 font-medium">{Land?.owneraddress}</p>
+                    </div>
+                    <div className="mb-4">
+                        <img src={"https://gateway.lighthouse.storage/ipfs/" + Land?.ipfshash} alt="land image" />
+                    </div>
+                    <div className="mb-4">
+                        <h2 className="text-lg font-bold">Price:</h2>
+                        <p className="text-gray-700 font-medium">{Land?.price} ETH</p>
+                    </div>
+                    <div className="mb-4">
+                        <Button variant="default" className="font-medium"><a href={"https://gateway.lighthouse.storage/ipfs/" + Land?.document}>View Document</a></Button>
+                    </div>
 
 
-        </Card>
+                </div>
+            </Modal>
+
+        </Card >
     )
 }

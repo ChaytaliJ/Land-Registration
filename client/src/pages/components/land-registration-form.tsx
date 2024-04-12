@@ -172,7 +172,7 @@ export default function LandRegistrationForm() {
                     }} id="picture" type="file" />
                 </div>
                 <div className="pt-6">
-                    <Button type="submit">Add</Button>
+                    <Button type="submit" disabled={!form.formState.isValid}>Add</Button>
                 </div>
             </form>
         </Form>
