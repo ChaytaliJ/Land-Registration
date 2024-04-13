@@ -21,7 +21,6 @@ export default function VerifyUserTable({ Users }) {
     const getUsers = useCallback(async () => {
         try {
             const usersDetails = [];
-
             for (let i = 0; i < Users?.length; i++) {
                 const UserDetails = await contractInstance?.methods?.getBuyerDetails(Users[i]).call();
                 const isVerified = await contractInstance?.methods?.isVerified(Users[i]).call();

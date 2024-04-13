@@ -44,6 +44,7 @@ export default function UserReceivedRequestTable() {
         try {
             const approval = await contractInstance?.methods?.approveRequest(Req_id).send(({ from: `${privateKey}`, gas: '2000000', gasPrice: '5000000000' }))
             console.log(approval);
+            window.location.reload()
         }
         catch (error) {
             console.log(error);
@@ -54,6 +55,7 @@ export default function UserReceivedRequestTable() {
         try {
             const Rejection = await contractInstance?.methods?.rejectRequest(Req_id).send(({ from: `${privateKey}`, gas: '2000000', gasPrice: '5000000000' }))
             console.log(Rejection);
+            window.location.reload()
         }
         catch (error) {
             console.log(error);

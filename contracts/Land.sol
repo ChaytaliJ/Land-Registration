@@ -44,6 +44,12 @@ contract Land {
         bool isRejected;
     }
 
+    struct OwnershipTransfer {
+        address previousOwner;
+        address newOwner;
+        uint timestamp;
+    }
+    mapping(uint => OwnershipTransfer[]) public ownershipTransfers;
     mapping(uint => Landreg) public lands;
     mapping(address => uint[]) public userOwnedLands;
     mapping(uint => LandInspector) public InspectorMapping;
@@ -278,7 +284,9 @@ contract Land {
     }
 
     function getLandInfo(uint landId) public view returns (Landreg memory) {
-        return lands[landId];
+        Landreg memory land = lands[landId];
+        land.landOwner = LandOwner[landId]; // Update land owner with the latest owner from LandOwner mapping
+        return land;
     }
 
     function getBuyerDetails(
@@ -333,7 +341,7 @@ contract Land {
     {
         uint[] memory reqIds = new uint[](requestsCount);
         address[] memory sellerIds = new address[](requestsCount);
-        uint[] memory landIds = new uint[](requestsCount);
+        uint[] memory allIds = new uint[](requestsCount);
         bool[] memory statuses = new bool[](requestsCount);
         bool[] memory rejections = new bool[](requestsCount);
 
@@ -342,7 +350,7 @@ contract Land {
             if (RequestsMapping[i].buyerId == _buyer) {
                 reqIds[index] = RequestsMapping[i].reqId;
                 sellerIds[index] = RequestsMapping[i].sellerId;
-                landIds[index] = RequestsMapping[i].landId;
+                allIds[index] = RequestsMapping[i].landId;
                 statuses[index] = RequestStatus[i];
                 rejections[index] = RequestsMapping[i].isRejected;
                 index++;
@@ -352,7 +360,7 @@ contract Land {
         assembly {
             mstore(reqIds, index)
             mstore(sellerIds, index)
-            mstore(landIds, index)
+            mstore(allIds, index)
             mstore(statuses, index)
             mstore(rejections, index)
         }
@@ -375,7 +383,7 @@ contract Land {
     {
         uint[] memory reqIds = new uint[](requestsCount);
         address[] memory buyerIds = new address[](requestsCount);
-        uint[] memory landIds = new uint[](requestsCount);
+        uint[] memory allIds = new uint[](requestsCount);
         bool[] memory statuses = new bool[](requestsCount);
         bool[] memory rejections = new bool[](requestsCount);
 
@@ -384,7 +392,7 @@ contract Land {
             if (RequestsMapping[i].sellerId == _seller) {
                 reqIds[index] = RequestsMapping[i].reqId;
                 buyerIds[index] = RequestsMapping[i].buyerId;
-                landIds[index] = RequestsMapping[i].landId;
+                allIds[index] = RequestsMapping[i].landId;
                 statuses[index] = RequestStatus[i];
                 rejections[index] = RequestsMapping[i].isRejected;
                 index++;
@@ -395,7 +403,7 @@ contract Land {
         assembly {
             mstore(reqIds, index)
             mstore(buyerIds, index)
-            mstore(landIds, index)
+            mstore(allIds, index)
             mstore(statuses, index)
             mstore(rejections, index)
         }
@@ -414,11 +422,90 @@ contract Land {
     function LandOwnershipTransfer(uint _landId, address _newOwner) public {
         require(isLandInspector(msg.sender));
 
-        LandOwner[_landId] = _newOwner;
+        address previousOwner = LandOwner[_landId]; // Store the previous owner
+        LandOwner[_landId] = _newOwner; // Update land ownership to the new owner
+
+        ownershipTransfers[_landId].push(
+            OwnershipTransfer({
+                previousOwner: previousOwner,
+                newOwner: _newOwner,
+                timestamp: block.timestamp
+            })
+        );
+
+        lands[_landId].isLandForSale = false; // Set isLandForSale to false
+
+        uint[] storage ownedLandIds = userOwnedLands[previousOwner];
+        for (uint i = 0; i < ownedLandIds.length; i++) {
+            if (ownedLandIds[i] == _landId) {
+                ownedLandIds[i] = ownedLandIds[ownedLandIds.length - 1];
+                ownedLandIds.pop();
+                break;
+            }
+        }
+
+        userOwnedLands[_newOwner].push(_landId);
+    }
+
+    function getOwnershipTransfers(
+        uint _landId
+    ) public view returns (OwnershipTransfer[] memory) {
+        return ownershipTransfers[_landId];
     }
 
     function isPaid(uint _landId) public view returns (bool) {
         return PaymentReceived[_landId];
+    }
+
+    function getCompletedTransactions()
+        public
+        view
+        returns (address[] memory, address[] memory, uint[] memory)
+    {
+        uint count = 0;
+
+        for (uint i = 1; i <= requestsCount; i++) {
+            if (
+                RequestStatus[i] && PaymentReceived[RequestsMapping[i].landId]
+            ) {
+                count++;
+            }
+        }
+
+        address[] memory sellers = new address[](count);
+        address[] memory buyers = new address[](count);
+        uint[] memory allIds = new uint[](count);
+
+        uint index = 0;
+        for (uint i = 1; i <= requestsCount; i++) {
+            if (
+                RequestStatus[i] && PaymentReceived[RequestsMapping[i].landId]
+            ) {
+                sellers[index] = RequestsMapping[i].sellerId;
+                buyers[index] = RequestsMapping[i].buyerId;
+                allIds[index] = RequestsMapping[i].landId;
+                index++;
+            }
+        }
+
+        return (sellers, buyers, landIds);
+    }
+
+    function getAllOwnershipTransfers()
+        public
+        view
+        returns (OwnershipTransfer[][] memory)
+    {
+        uint[] memory allIds = getAllLandIds();
+        OwnershipTransfer[][] memory allTransfers = new OwnershipTransfer[][](
+            allIds.length
+        );
+
+        for (uint i = 0; i < allIds.length; i++) {
+            allTransfers[i] = ownershipTransfers[allIds[i]];
+        }
+
+        return allTransfers;
     }
 
     function payment(

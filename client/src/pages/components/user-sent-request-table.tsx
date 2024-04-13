@@ -79,6 +79,7 @@ export default function UserSentRequestTable() {
             const pay = await contractInstance?.methods?.payment(payable_receiver, land_id, price).send({ from: `${privateKey}`, value: amountInWei, gas: 2100000 })
 
             console.log(pay);
+            window.location.reload()
         }
         catch (error) {
             console.log(error);
@@ -112,7 +113,7 @@ export default function UserSentRequestTable() {
                             <TableCell className="text-center" >
                                 <div>
                                     {
-                                        request.isPaid ? (<div>Payment Done</div>) : (<Button className="h-8" disabled={request.rejected} onClick={openModal}>Pay</Button>)
+                                        request.isPaid ? (<div>Payment Done</div>) : (<Button className="h-8" disabled={request.rejected || !request.approved} onClick={openModal}>Pay</Button>)
                                     }
 
 

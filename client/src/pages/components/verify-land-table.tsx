@@ -67,7 +67,7 @@ export default function VerifyLandTable({ Lands }) {
         <div>   <Table>
             <TableHeader>
                 <TableRow>
-                    <TableHead className="w-[100px]">Sr.No</TableHead>
+                    <TableHead className="w-[100px]">Land Id</TableHead>
                     <TableHead className="w-[200px]">Owner Address</TableHead>
                     <TableHead className="w-[100px]">Area</TableHead>
                     <TableHead className="w-[100px]">Price</TableHead>

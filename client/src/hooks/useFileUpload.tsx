@@ -13,7 +13,7 @@ const useFileUpload = () => {
     }
     const uploadFile = async (file: any) => {
         //@ts-ignore
-        const output: any = await lighthouse.upload(file, import.meta.env.VITE_LIGHTHOUSE_API_KEY, false, null, progressCallback)
+        const output: any = await lighthouse?.upload(file, import.meta.env.VITE_LIGHTHOUSE_API_KEY, false, null, progressCallback)
         setDocumentHash(output.data.Hash)
         console.log('File Status:', output)
         console.log('Visit at https://gateway.lighthouse.storage/ipfs/' + output.data.Hash)

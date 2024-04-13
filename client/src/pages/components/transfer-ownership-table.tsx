@@ -8,54 +8,53 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
-
-const lands = [
-
-    {
-        land: "1",
-        selleraddress: "JSDFJ982789343803294809OI34II32",
-        buyeraddress: "sfsdfFJ982fdsdfsdfsdf94809OI34II32",
-        status: "payement done"
-
-    },
-    {
-        land: "1",
-        selleraddress: "JSDFJ982789343803294809OI34II32",
-        buyeraddress: "sfsdfFJ982fdsdfsdfsdf94809OI34II32",
-        status: "payement done"
-
-    },
-    {
-        land: "1",
-        selleraddress: "JSDFJ982789343803294809OI34II32",
-        buyeraddress: "sfsdfFJ982fdsdfsdfsdf94809OI34II32",
-        status: "payement done"
-
-    },
-    {
-        land: "1",
-        selleraddress: "JSDFJ982789343803294809OI34II32",
-        buyeraddress: "sfsdfFJ982fdsdfsdfsdf94809OI34II32",
-        status: "payement done"
-
-    },
-    {
-        land: "1",
-        selleraddress: "JSDFJ982789343803294809OI34II32",
-        buyeraddress: "sfsdfFJ982fdsdfsdfsdf94809OI34II32",
-        status: "payement done"
-
-    },
-
-]
+import useContract from "@/hooks/useContract";
+import { useCallback, useEffect, useState } from "react";
 
 
 export default function TransferOwnershipTable() {
+    const privateKey = localStorage.getItem('key')
+    const [TransactionInfo, setTransactionInfo] = useState([])
+    const contractInstance: any = useContract();
+    const getTransactions = useCallback(async () => {
+        try {
+
+            const transactions = await contractInstance?.methods?.getCompletedTransactions().call()
+
+            const formattedData = transactions[0].map((_, index: any) => ({
+                seller_address: transactions[0][index],
+                buyers_address: transactions[1][index],
+                land_id: parseInt(transactions[2][index])
+
+            }));
+            setTransactionInfo(formattedData);
+            console.log(formattedData);
+
+        } catch (error) {
+            console.log(error);
+        }
+    }, [contractInstance])
+
+    useEffect(() => {
+        getTransactions();
+    }, [getTransactions]);
+
+    async function TransferOwnershipHandler(land_id: number, new_owner: string) {
+        try {
+            const transfer = await contractInstance.methods.LandOwnershipTransfer(land_id, new_owner).send({ from: `${privateKey}`, gas: '2000000', gasPrice: '5000000000' })
+            console.log(transfer);
+        }
+        catch (error) {
+            console.log(error);
+        }
+    }
+
+
     return (
         <div>   <Table>
             <TableHeader>
                 <TableRow>
-                    <TableHead className="w-[100px]">Sr.No</TableHead>
+                    <TableHead className="w-[100px]">land id</TableHead>
                     <TableHead className="w-[100px]">Seller Address</TableHead>
                     <TableHead className="w-[100px]">Buyer Address</TableHead>
                     <TableHead className="w-[150px]">Status</TableHead>
@@ -63,24 +62,21 @@ export default function TransferOwnershipTable() {
                 </TableRow>
             </TableHeader>
             <TableBody>
-                {lands.map((land) => (
-                    <TableRow key={land.land}>
-                        <TableCell className="font-medium">{land.land}</TableCell>
-                        <TableCell className="font-medium">{land.selleraddress}</TableCell>
-                        <TableCell className="font-medium">{land.buyeraddress}</TableCell>
-                        <TableCell className="font-medium">{land.status}</TableCell>
+                {TransactionInfo.map((land) => (
+                    <TableRow key={land.land_id}>
+                        <TableCell className="font-medium">{land.land_id}</TableCell>
+                        <TableCell className="font-medium">{land.seller_address}</TableCell>
+                        <TableCell className="font-medium">{land.buyers_address}</TableCell>
+                        <TableCell className="font-medium">pending</TableCell>
                         <TableCell >
-                            <Button className="h-8">Transfer</Button>
+                            <Button className="h-8" onClick={() => {
+                                TransferOwnershipHandler(land.land_id, land.buyers_address);
+                            }}>Transfer</Button>
                         </TableCell>
                     </TableRow>
                 ))}
             </TableBody>
-            {/* <TableFooter>
-    <TableRow>
-        <TableCell colSpan={3}>Total</TableCell>
-        <TableCell className="text-right">$2,500.00</TableCell>
-    </TableRow>
-</TableFooter> */}
+
         </Table></div>
     )
 }
