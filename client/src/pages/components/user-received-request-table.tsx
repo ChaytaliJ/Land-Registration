@@ -19,7 +19,7 @@ export default function UserReceivedRequestTable() {
     const getReceivedRequest = useCallback(async () => {
         try {
             const ReceivedRequest = await contractInstance?.methods?.getSellerRequestDetails(privateKey).call();
-
+            console.log(ReceivedRequest);
             const formattedData = ReceivedRequest[0].map((_, index: any) => ({
                 request_id: parseInt(ReceivedRequest[0][index]),
                 address: ReceivedRequest[1][index],
@@ -71,7 +71,6 @@ export default function UserReceivedRequestTable() {
                         <TableHead className="w-[100px]">Land Id</TableHead>
                         <TableHead className="w-[350px]">Buyers Address</TableHead>
                         <TableHead >Status</TableHead>
-                        <TableHead>Payement Done ?</TableHead>
                         <TableHead className="text-center">Accept</TableHead>
                         <TableHead className="text-center">Reject</TableHead>
 
@@ -84,7 +83,6 @@ export default function UserReceivedRequestTable() {
                             <TableCell className="font-medium">{request.land_id}</TableCell>
                             <TableCell className="font-medium">{request.address}</TableCell>
                             <TableCell className="font-medium">{request.rejected ? (<div>Cancelled</div>) : (<div>Pending</div>)}</TableCell>
-                            <TableCell className="text-center font-medium">False</TableCell>
                             <TableCell className="text-center">
                                 <div>
                                     {

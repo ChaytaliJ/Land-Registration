@@ -20,13 +20,16 @@ export function UserMainNav({ }: React.HTMLAttributes<HTMLElement>) {
                         <NavLink to="/user/dashboard/sent-request" location={location}>My Sent Request</NavLink>
                     </nav>
                     <div className="ml-auto flex items-center space-x-4">
-                        <Button className='h-8' onClick={() => navigate('/')}>Log out</Button>
+                        <Button className='h-8' onClick={() => {
+                            localStorage.clear()
+                            navigate('/')
+                        }}>Log out</Button>
                     </div>
                 </div>
 
             </div>
             <Outlet />
-        </div>
+        </div >
     );
 }
 

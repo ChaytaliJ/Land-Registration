@@ -423,6 +423,8 @@ contract Land {
         require(isLandInspector(msg.sender));
 
         address previousOwner = LandOwner[_landId]; // Store the previous owner
+        RequestedLands[_landId] = false;
+        PaymentReceived[_landId] = false;
         LandOwner[_landId] = _newOwner; // Update land ownership to the new owner
 
         ownershipTransfers[_landId].push(

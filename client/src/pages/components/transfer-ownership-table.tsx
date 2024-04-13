@@ -20,7 +20,7 @@ export default function TransferOwnershipTable() {
         try {
 
             const transactions = await contractInstance?.methods?.getCompletedTransactions().call()
-
+            console.log(transactions);
             const formattedData = transactions[0].map((_, index: any) => ({
                 seller_address: transactions[0][index],
                 buyers_address: transactions[1][index],
@@ -62,8 +62,8 @@ export default function TransferOwnershipTable() {
                 </TableRow>
             </TableHeader>
             <TableBody>
-                {TransactionInfo.map((land) => (
-                    <TableRow key={land.land_id}>
+                {TransactionInfo.map((land, index) => (
+                    <TableRow key={index}>
                         <TableCell className="font-medium">{land.land_id}</TableCell>
                         <TableCell className="font-medium">{land.seller_address}</TableCell>
                         <TableCell className="font-medium">{land.buyers_address}</TableCell>

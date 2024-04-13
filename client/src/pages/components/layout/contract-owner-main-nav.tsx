@@ -17,7 +17,10 @@ export function ContractOwnerMainNav({ }: React.HTMLAttributes<HTMLElement>) {
                         <NavLink to="/contract-owner/dashboard/all-land-inspectors" location={location}>All Land Inspector</NavLink>
                     </nav>
                     <div className="ml-auto flex items-center space-x-4">
-                        <Button className='h-8' onClick={() => navigate('/')}>Log out</Button>
+                        <Button className='h-8' onClick={() => {
+                            localStorage.clear()
+                            navigate('/')
+                        }}>Log out</Button>
                     </div>
                 </div>
 
