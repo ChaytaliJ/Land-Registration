@@ -3,7 +3,13 @@ import { Link, useLocation } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
 import { Outlet } from 'react-router-dom';
 
+import {
+    DropdownMenu,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+
 export function LandInspectorMainNav({ }: React.HTMLAttributes<HTMLElement>) {
+    const privateKey = localStorage.getItem('key')
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -18,7 +24,13 @@ export function LandInspectorMainNav({ }: React.HTMLAttributes<HTMLElement>) {
                         <NavLink to="/land-inspector/dashboard/transfer-ownership" location={location}>Transfer Ownership</NavLink>
                     </nav>
                     <div className="ml-auto flex items-center space-x-4">
-                        <Button className='h-8' onClick={() => {
+
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="outline">{privateKey}</Button>
+                            </DropdownMenuTrigger>
+                        </DropdownMenu>
+                        <Button className='h-9' onClick={() => {
                             localStorage.clear()
                             navigate('/')
                         }}>Log out</Button>

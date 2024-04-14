@@ -3,9 +3,16 @@ import { Link, useLocation } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
 import { Outlet } from 'react-router-dom';
 
+// import { Button } from "@/components/ui/button"
+import {
+    DropdownMenu,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+
 export function UserMainNav({ }: React.HTMLAttributes<HTMLElement>) {
     const navigate = useNavigate();
     const location = useLocation();
+    const privateKey = localStorage.getItem('key')
 
     return (
         <div>
@@ -20,7 +27,13 @@ export function UserMainNav({ }: React.HTMLAttributes<HTMLElement>) {
                         <NavLink to="/user/dashboard/sent-request" location={location}>My Sent Request</NavLink>
                     </nav>
                     <div className="ml-auto flex items-center space-x-4">
-                        <Button className='h-8' onClick={() => {
+
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="outline">{privateKey}</Button>
+                            </DropdownMenuTrigger>
+                        </DropdownMenu>
+                        <Button className='h-9' onClick={() => {
                             localStorage.clear()
                             navigate('/')
                         }}>Log out</Button>

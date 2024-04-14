@@ -82,7 +82,13 @@ export default function UserReceivedRequestTable() {
                             <TableCell className="font-medium">{request.request_id}</TableCell>
                             <TableCell className="font-medium">{request.land_id}</TableCell>
                             <TableCell className="font-medium">{request.address}</TableCell>
-                            <TableCell className="font-medium">{request.rejected ? (<div>Cancelled</div>) : (<div>Pending</div>)}</TableCell>
+                            <TableCell className="font-medium">    {request.rejected ? (
+                                <div>Cancelled</div>
+                            ) : request.approved ? (
+                                <div>Completed</div>
+                            ) : (
+                                <div>Pending</div>
+                            )}</TableCell>
                             <TableCell className="text-center">
                                 <div>
                                     {
