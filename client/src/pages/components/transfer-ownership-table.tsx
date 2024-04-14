@@ -21,7 +21,7 @@ export default function TransferOwnershipTable() {
 
             const transactions = await contractInstance?.methods?.getCompletedTransactions().call()
             console.log(transactions);
-            const formattedData = transactions[0].map((_, index: any) => ({
+            const formattedData = transactions[2].map((_, index: any) => ({
                 seller_address: transactions[0][index],
                 buyers_address: transactions[1][index],
                 land_id: parseInt(transactions[2][index])

@@ -49,6 +49,13 @@ contract Land {
         address newOwner;
         uint timestamp;
     }
+
+    struct CompletedTransaction {
+        uint landId;
+        address seller;
+        address buyer;
+    }
+
     mapping(uint => OwnershipTransfer[]) public ownershipTransfers;
     mapping(uint => Landreg) public lands;
     mapping(address => uint[]) public userOwnedLands;
@@ -458,41 +465,47 @@ contract Land {
     function isPaid(uint _landId) public view returns (bool) {
         return PaymentReceived[_landId];
     }
-
     function getCompletedTransactions()
         public
         view
         returns (address[] memory, address[] memory, uint[] memory)
     {
+        // Create an array to store completed transactions
+        CompletedTransaction[]
+            memory completedTransactions = new CompletedTransaction[](
+                requestsCount
+            );
+
         uint count = 0;
 
+        // Iterate through requests to populate completed transactions array
         for (uint i = 1; i <= requestsCount; i++) {
             if (
                 RequestStatus[i] && PaymentReceived[RequestsMapping[i].landId]
             ) {
+                completedTransactions[count] = CompletedTransaction({
+                    landId: RequestsMapping[i].landId,
+                    seller: RequestsMapping[i].sellerId,
+                    buyer: RequestsMapping[i].buyerId
+                });
                 count++;
             }
         }
 
+        // Initialize arrays to store results
         address[] memory sellers = new address[](count);
         address[] memory buyers = new address[](count);
         uint[] memory allIds = new uint[](count);
 
-        uint index = 0;
-        for (uint i = 1; i <= requestsCount; i++) {
-            if (
-                RequestStatus[i] && PaymentReceived[RequestsMapping[i].landId]
-            ) {
-                sellers[index] = RequestsMapping[i].sellerId;
-                buyers[index] = RequestsMapping[i].buyerId;
-                allIds[index] = RequestsMapping[i].landId;
-                index++;
-            }
+        // Populate sellers, buyers, and land IDs arrays from completed transactions
+        for (uint j = 0; j < count; j++) {
+            sellers[j] = completedTransactions[j].seller;
+            buyers[j] = completedTransactions[j].buyer;
+            allIds[j] = completedTransactions[j].landId;
         }
 
-        return (sellers, buyers, landIds);
+        return (sellers, buyers, allIds);
     }
-
     function getAllOwnershipTransfers()
         public
         view
