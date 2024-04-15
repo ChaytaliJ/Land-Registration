@@ -71,21 +71,25 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
                     </Button>
 
                     <div className="p-5 relative">
+                        {/* <div className="absolute inset-0 flex items-center">
+                            <span className="w-full border-t " />
+                        </div> */}
+                        <div className="relative flex justify-center text-xs uppercase">
+                            {/* <span className="bg-background px-2 text-muted-foreground">
+                                Or
+                            </span> */}
+                        </div>
                         <div className="absolute inset-0 flex items-center">
                             <span className="w-full border-t " />
                         </div>
-                        <div className="relative flex justify-center text-xs uppercase">
-                            <span className="bg-background px-2 text-muted-foreground">
-                                Or
-                            </span>
-                        </div>
+
                     </div>
 
                 </div>
-                <Button className="bgcolor-white" >
+                {/* <Button className="bgcolor-white" >
                     <div className="p-2"></div>
                     Connect to MetaMask
-                </Button>
+                </Button> */}
 
             </div>
 

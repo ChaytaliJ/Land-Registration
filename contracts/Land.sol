@@ -292,7 +292,7 @@ contract Land {
 
     function getLandInfo(uint landId) public view returns (Landreg memory) {
         Landreg memory land = lands[landId];
-        land.landOwner = LandOwner[landId]; // Update land owner with the latest owner from LandOwner mapping
+        land.landOwner = LandOwner[landId];
         return land;
     }
 
@@ -406,7 +406,6 @@ contract Land {
             }
         }
 
-        // Resize arrays to remove any unused slots
         assembly {
             mstore(reqIds, index)
             mstore(buyerIds, index)
@@ -429,10 +428,10 @@ contract Land {
     function LandOwnershipTransfer(uint _landId, address _newOwner) public {
         require(isLandInspector(msg.sender));
 
-        address previousOwner = LandOwner[_landId]; // Store the previous owner
+        address previousOwner = LandOwner[_landId];
         RequestedLands[_landId] = false;
         PaymentReceived[_landId] = false;
-        LandOwner[_landId] = _newOwner; // Update land ownership to the new owner
+        LandOwner[_landId] = _newOwner;
 
         ownershipTransfers[_landId].push(
             OwnershipTransfer({
@@ -442,7 +441,7 @@ contract Land {
             })
         );
 
-        lands[_landId].isLandForSale = false; // Set isLandForSale to false
+        lands[_landId].isLandForSale = false;
 
         uint[] storage ownedLandIds = userOwnedLands[previousOwner];
         for (uint i = 0; i < ownedLandIds.length; i++) {
@@ -470,7 +469,6 @@ contract Land {
         view
         returns (address[] memory, address[] memory, uint[] memory)
     {
-        // Create an array to store completed transactions
         CompletedTransaction[]
             memory completedTransactions = new CompletedTransaction[](
                 requestsCount
@@ -478,7 +476,6 @@ contract Land {
 
         uint count = 0;
 
-        // Iterate through requests to populate completed transactions array
         for (uint i = 1; i <= requestsCount; i++) {
             if (
                 RequestStatus[i] && PaymentReceived[RequestsMapping[i].landId]
@@ -492,12 +489,10 @@ contract Land {
             }
         }
 
-        // Initialize arrays to store results
         address[] memory sellers = new address[](count);
         address[] memory buyers = new address[](count);
         uint[] memory allIds = new uint[](count);
 
-        // Populate sellers, buyers, and land IDs arrays from completed transactions
         for (uint j = 0; j < count; j++) {
             sellers[j] = completedTransactions[j].seller;
             buyers[j] = completedTransactions[j].buyer;

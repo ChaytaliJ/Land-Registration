@@ -23,6 +23,7 @@ import LandInspectorVerifyUserPage from "./pages/LandInspector/LandInspectorVeri
 import LandInspectorVerifyLand from "./pages/LandInspector/LandInspectorVerifyLand";
 import LandInspectorTransferOwnershipPage from "./pages/LandInspector/LandInspectorTransferOwnershipPage";
 import NotFound from "./pages/NotFound";
+import OwnershipDetailsPage from "./pages/LandInspector/OwnershipDetailsPage";
 
 function App() {
   return (
@@ -47,6 +48,8 @@ function App() {
         <Route path="verify-user" element={<LandInspectorVerifyUserPage />} />
         <Route path="verify-land" element={<LandInspectorVerifyLand />} />
         <Route path="transfer-ownership" element={<LandInspectorTransferOwnershipPage />} />
+        <Route path="ownership-details" element={<OwnershipDetailsPage />} />
+
 
       </Route>
 

@@ -22,6 +22,8 @@ export function LandInspectorMainNav({ }: React.HTMLAttributes<HTMLElement>) {
                         <NavLink to="/land-inspector/dashboard/verify-user" location={location}>Verify User</NavLink>
                         <NavLink to="/land-inspector/dashboard/verify-land" location={location}>Verify Land</NavLink>
                         <NavLink to="/land-inspector/dashboard/transfer-ownership" location={location}>Transfer Ownership</NavLink>
+                        {/* <NavLink to="/land-inspector/dashboard/ownership-details" location={location}>Ownership Details</NavLink> */}
+
                     </nav>
                     <div className="ml-auto flex items-center space-x-4">
 
