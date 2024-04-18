@@ -52,7 +52,7 @@ export default function LandRegistrationForm() {
         try {
 
 
-            const RegisterLand = await contractInstance.methods.addLand(data.area, data.city, data.state, data.price, data.pid, data.survey, ImageHash, documentHash).send({ from: `${privateKey}`, gas: '2000000', gasPrice: '5000000000' })
+            const RegisterLand = await contractInstance.methods.addLand(data.area, data.city, data.state, data.price, data.pid, data.survey, fileUploader_2.documentHash, fileUploader_1.documentHash).send({ from: `${privateKey}`, gas: '2000000', gasPrice: '5000000000' })
 
             console.log("Transaction receipt:", RegisterLand);
             navigate('/user/dashboard')
