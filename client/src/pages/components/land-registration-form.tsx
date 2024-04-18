@@ -17,7 +17,10 @@ import { useNavigate } from "react-router-dom";
 import useContract from "@/hooks/useContract";
 import useFileUpload from "@/hooks/useFileUpload";
 import { useState } from "react";
-import lighthouse from '@lighthouse-web3/sdk'
+
+import { Progress } from "@/components/ui/progress"
+
+import { FaCheckCircle } from "react-icons/fa";
 
 const profileFormSchema = z.object({
     area: z.string({ required_error: "Please enter area." }),
@@ -40,7 +43,9 @@ export default function LandRegistrationForm() {
     });
     const [ImageHash, setImageHash] = useState()
 
-    const { uploadFile, documentHash, uploadProgress } = useFileUpload();
+    const fileUploader_1 = useFileUpload();
+    const fileUploader_2 = useFileUpload();
+
 
     async function FormHandler(data: any) {
 
@@ -58,20 +63,7 @@ export default function LandRegistrationForm() {
         }
 
     }
-    //@ts-ignore
-    const progressCallback = (progressData) => {
-        let percentageDone =
-            //@ts-ignore
-            100 - (progressData?.total / progressData?.uploaded)?.toFixed(2)
-        console.log(percentageDone)
-    }
-    const uploadImage = async (file: any) => {
-        //@ts-ignore
-        const output: any = await lighthouse?.upload(file, import.meta.env.VITE_LIGHTHOUSE_API_KEY, false, null, progressCallback)
-        setImageHash(output.data.Hash)
-        console.log('File Status:', output)
-        console.log('Visit at https://gateway.lighthouse.storage/ipfs/' + output.data.Hash)
-    }
+
 
     return (
         <Form {...form}>
@@ -163,14 +155,24 @@ export default function LandRegistrationForm() {
                 <div className="grid w-full max-w-sm items-center gap-1.5">
                     <Label htmlFor="picture">Document</Label>
                     <Input onChange={(e) => {
-                        uploadFile(e.target.files)
+                        fileUploader_1.uploadFile(e.target.files)
                     }} id="document" type="file" />
+                    <div className="flex">
+                        <Progress value={fileUploader_1.uploadProgress + 1} className="w-[60%]" />
+                        {fileUploader_1.uploadProgress === 99 && <FaCheckCircle className="ml-4" />}
+                    </div>
+                    {/* {fileUploader_1.uploadProgress} */}
                 </div>
                 <div className="grid w-full max-w-sm items-center gap-1.5">
                     <Label htmlFor="picture">Land Image</Label>
                     <Input onChange={(e) => {
-                        uploadImage(e.target.files)
+                        fileUploader_2.uploadFile(e.target.files)
                     }} id="picture" type="file" />
+                    <div className="flex">
+                        <Progress value={fileUploader_2.uploadProgress + 1} className="w-[60%]" />
+                        {fileUploader_2.uploadProgress === 99 && <FaCheckCircle className="ml-4" />}
+                    </div>
+                    {/* {fileUploader_2.uploadProgress} */}
                 </div>
                 <div className="pt-6">
                     <Button type="submit" disabled={!form.formState.isValid}>Add</Button>

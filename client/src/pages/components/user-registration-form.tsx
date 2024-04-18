@@ -17,6 +17,10 @@ import useContract from "@/hooks/useContract";
 import { useState } from "react";
 import useFileUpload from "@/hooks/useFileUpload";
 
+import { Progress } from "@/components/ui/progress"
+
+import { FaCheckCircle } from "react-icons/fa";
+
 const profileFormSchema = z.object({
     username: z.string().min(2, "Username must be at least 2 characters.").max(30, "Username must not be longer than 30 characters."),
     email: z.string({ required_error: "Please enter an email." }).email(),
@@ -136,7 +140,11 @@ export default function UserRegistrationForm() {
                 <div className="grid w-full max-w-sm items-center gap-1.5">
                     <Label htmlFor="picture">Document</Label>
                     <Input onChange={handleFileUpload} id="picture" type="file" />
-                    <div>{uploadProgress}</div>
+                    {/* <div>{uploadProgress}</div> */}
+                    <div className="flex">
+                        <Progress value={uploadProgress + 1} className="w-[60%]" />
+                        {uploadProgress === 99 && <FaCheckCircle className="ml-4" />}
+                    </div>
                 </div>
                 <FormField
                     control={form.control}
